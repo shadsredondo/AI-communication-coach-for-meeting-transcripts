@@ -5,190 +5,262 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, ArrowRight, Target, MessageSquare, Mic, FileText,
-  ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Minus, Check,
-  Brain, ListTodo, HelpCircle
+  ChevronDown, ChevronUp, Brain, ListTodo, AlertCircle, CheckCircle2,
+  Check, Users
 } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { getSession } from '@/lib/storage'
 import { formatDate } from '@/lib/utils'
 import type { Session, GoalScore, CoachingSection, MeetingAnalysis } from '@/types'
 
+// ─── Goal Indicator ────────────────────────────────────────────────────────────
+
 function GoalIndicator({ score, headline }: { score: GoalScore; headline: string }) {
   const config = {
-    green: { bg: 'bg-emerald-50', border: 'border-emerald-200', icon: CheckCircle2, iconColor: 'text-emerald-500', label: 'Strong', badge: 'success' as const },
-    yellow: { bg: 'bg-amber-50', border: 'border-amber-200', icon: Minus, iconColor: 'text-amber-500', label: 'Partial', badge: 'warning' as const },
-    red: { bg: 'bg-red-50', border: 'border-red-200', icon: AlertTriangle, iconColor: 'text-red-500', label: 'Off track', badge: 'danger' as const },
+    green: {
+      bar: 'bg-emerald-400',
+      dot: 'bg-emerald-400',
+      label: 'Strong',
+      labelColor: 'text-emerald-600',
+    },
+    yellow: {
+      bar: 'bg-amber-400',
+      dot: 'bg-amber-400',
+      label: 'Partial',
+      labelColor: 'text-amber-600',
+    },
+    red: {
+      bar: 'bg-red-400',
+      dot: 'bg-red-400',
+      label: 'Off track',
+      labelColor: 'text-red-500',
+    },
   }[score]
 
-  const Icon = config.icon
-
   return (
-    <div className={`rounded-xl border p-5 ${config.bg} ${config.border}`}>
-      <div className="flex items-start gap-3">
-        <Icon size={18} className={`${config.iconColor} flex-shrink-0 mt-0.5`} />
-        <div>
-          <Badge variant={config.badge} className="mb-2">{config.label}</Badge>
-          <p className="text-sm text-gray-700 leading-relaxed">{headline}</p>
+    <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-sm">
+      <div className={`h-[3px] w-full ${config.bar}`} />
+      <div className="px-6 py-5">
+        <div className="flex items-center gap-2 mb-3">
+          <span className={`w-2 h-2 rounded-full ${config.dot}`} />
+          <span className={`text-xs font-semibold uppercase tracking-wider ${config.labelColor}`}>
+            {config.label}
+          </span>
+        </div>
+        <p className="text-base font-semibold text-zinc-900 leading-snug">{headline}</p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Signal Summary ────────────────────────────────────────────────────────────
+
+function SignalSummary({
+  whatLanded,
+  nextMoves,
+}: {
+  whatLanded: string[]
+  nextMoves: string[]
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-sm">
+      <div className="px-6 py-4 border-b border-zinc-100">
+        <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em]">Signal Summary</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-zinc-100">
+        <div className="px-6 py-6">
+          <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em] mb-4">What landed</p>
+          <ul className="space-y-3.5">
+            {whatLanded.map((s, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="mt-0.5 w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <Check size={9} className="text-emerald-600" strokeWidth={3} />
+                </span>
+                <span className="text-sm text-zinc-700 leading-snug">{s}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="px-6 py-6">
+          <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em] mb-4">Your next 3 moves</p>
+          <ol className="space-y-3.5">
+            {nextMoves.map((m, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="mt-0.5 w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-indigo-600 leading-none">
+                  {i + 1}
+                </span>
+                <span className="text-sm text-zinc-700 leading-snug">{m}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </div>
   )
 }
 
-function ExpandableCard({
-  title,
-  description,
+// ─── Coaching Section ──────────────────────────────────────────────────────────
+
+function CoachingCard({
+  section,
   icon: Icon,
-  children,
-  defaultOpen = false,
+  title,
+  index,
 }: {
-  title: string
-  description?: string
+  section: CoachingSection
   icon: React.ElementType
-  children: React.ReactNode
-  defaultOpen?: boolean
+  title: string
+  index: number
 }) {
-  const [open, setOpen] = useState(defaultOpen)
+  const [open, setOpen] = useState(false)
 
   return (
-    <Card>
-      <button className="w-full text-left" onClick={() => setOpen(!open)}>
-        <CardHeader className="flex flex-row items-center justify-between pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
-              <Icon size={15} className="text-indigo-600" />
+    <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-sm">
+      <button
+        className="w-full text-left px-6 py-5 hover:bg-zinc-50/60 transition-colors"
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Icon size={14} className="text-indigo-500" />
             </div>
-            <div>
-              <CardTitle>{title}</CardTitle>
-              {description && <CardDescription>{description}</CardDescription>}
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em] mb-1">{title}</p>
+              <p className="text-sm font-semibold text-zinc-900 leading-snug pr-4">
+                {section.one_line_summary}
+              </p>
             </div>
           </div>
-          {open ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
-        </CardHeader>
+          <div className="flex-shrink-0 mt-1">
+            {open
+              ? <ChevronUp size={15} className="text-zinc-400" />
+              : <ChevronDown size={15} className="text-zinc-400" />
+            }
+          </div>
+        </div>
       </button>
-      {open && <CardContent>{children}</CardContent>}
-    </Card>
-  )
-}
 
-function SectionContent({ section }: { section: CoachingSection }) {
-  return (
-    <div className="space-y-5">
-      {section.what_went_well.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-3">What went well</p>
-          <div className="space-y-2">
-            {section.what_went_well.map((item, i) => (
-              <div key={i} className="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
-                <p className="text-sm font-medium text-gray-900 mb-1.5">{item.point}</p>
-                <p className="text-xs text-gray-500 italic leading-relaxed">"{item.evidence}"</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {open && (
+        <div className="border-t border-zinc-100 px-6 py-6 space-y-6">
 
-      {section.what_could_be_stronger.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-3">What could be stronger</p>
-          <div className="space-y-2">
-            {section.what_could_be_stronger.map((item, i) => (
-              <div key={i} className="bg-amber-50 border border-amber-100 rounded-lg p-4">
-                <p className="text-sm font-medium text-gray-900 mb-1.5">{item.point}</p>
-                <p className="text-xs text-gray-500 italic leading-relaxed">"{item.evidence}"</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {section.rewrite_suggestions && section.rewrite_suggestions.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-3">Rewrite suggestions</p>
-          <div className="space-y-3">
-            {section.rewrite_suggestions.map((r, i) => (
-              <div key={i} className="border border-gray-100 rounded-xl overflow-hidden">
-                <div className="grid grid-cols-2 divide-x divide-gray-100">
-                  <div className="p-4">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">What you said</p>
-                    <p className="text-sm text-gray-600 italic leading-relaxed">"{r.original}"</p>
+          {section.what_went_well.length > 0 && (
+            <div>
+              <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-[0.1em] mb-3">What went well</p>
+              <div className="space-y-2.5">
+                {section.what_went_well.map((item, i) => (
+                  <div key={i} className="rounded-xl bg-emerald-50 border border-emerald-100 p-4">
+                    <p className="text-sm font-semibold text-zinc-900 mb-2 leading-snug">{item.point}</p>
+                    <p className="text-xs text-zinc-500 italic leading-relaxed">"{item.evidence}"</p>
                   </div>
-                  <div className="p-4">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Stronger version</p>
-                    <p className="text-sm text-gray-900 font-medium leading-relaxed">"{r.rewrite}"</p>
-                  </div>
-                </div>
-                <div className="px-4 py-2.5 bg-indigo-50 border-t border-indigo-100">
-                  <p className="text-xs text-indigo-700 leading-relaxed">{r.why}</p>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {section.what_could_be_stronger.length > 0 && (
+            <div>
+              <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-[0.1em] mb-3">What could be stronger</p>
+              <div className="space-y-2.5">
+                {section.what_could_be_stronger.map((item, i) => (
+                  <div key={i} className="rounded-xl bg-amber-50 border border-amber-100 p-4">
+                    <p className="text-sm font-semibold text-zinc-900 mb-2 leading-snug">{item.point}</p>
+                    <p className="text-xs text-zinc-500 italic leading-relaxed">"{item.evidence}"</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {section.rewrite_suggestions && section.rewrite_suggestions.length > 0 && (
+            <div>
+              <p className="text-[11px] font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-3">Rewrite suggestions</p>
+              <div className="space-y-3">
+                {section.rewrite_suggestions.map((r, i) => (
+                  <div key={i} className="rounded-xl border border-zinc-200 overflow-hidden">
+                    <div className="grid grid-cols-2 divide-x divide-zinc-100">
+                      <div className="p-4">
+                        <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">What you said</p>
+                        <p className="text-sm text-zinc-500 italic leading-relaxed">"{r.original}"</p>
+                      </div>
+                      <div className="p-4 bg-zinc-50/50">
+                        <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">Stronger version</p>
+                        <p className="text-sm text-zinc-900 font-medium leading-relaxed">"{r.rewrite}"</p>
+                      </div>
+                    </div>
+                    <div className="px-4 py-2.5 bg-indigo-50 border-t border-indigo-100">
+                      <p className="text-xs text-indigo-700 leading-relaxed">{r.why}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   )
 }
 
+// ─── Meeting Intelligence ──────────────────────────────────────────────────────
+
 function ConfidencePip({ level }: { level: 'high' | 'medium' | 'low' }) {
-  const color = { high: 'bg-emerald-400', medium: 'bg-amber-400', low: 'bg-red-400' }[level]
-  return <span className={`inline-block w-1.5 h-1.5 rounded-full ${color} mr-1.5`} />
+  const color = { high: 'bg-emerald-400', medium: 'bg-amber-400', low: 'bg-zinc-400' }[level]
+  return <span className={`inline-block w-1.5 h-1.5 rounded-full ${color} mr-1.5 flex-shrink-0 mt-[5px]`} />
 }
 
 function MeetingIntelligence({ analysis }: { analysis: MeetingAnalysis }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="border border-gray-200 rounded-xl bg-white overflow-hidden">
+    <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-sm">
       <button
-        className="w-full text-left px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        className="w-full text-left px-6 py-4 flex items-center justify-between hover:bg-zinc-50/60 transition-colors"
         onClick={() => setOpen(!open)}
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0">
-            <Brain size={14} className="text-slate-500" />
+          <div className="w-7 h-7 rounded-lg bg-zinc-100 flex items-center justify-center flex-shrink-0">
+            <Brain size={13} className="text-zinc-500" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">Meeting Intelligence</p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              {analysis.decisions_made.length} decisions · {analysis.action_items.length} action items · {analysis.open_questions.length} open questions
+            <p className="text-sm font-semibold text-zinc-700">Meeting Intelligence</p>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              {analysis.decisions_made.length} decisions · {analysis.action_items.length} actions · {analysis.open_questions.length} open questions
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-400 uppercase tracking-widest border border-slate-200 rounded-full px-2 py-0.5">Agent 1</span>
-          {open ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
+        <div className="flex items-center gap-2.5">
+          <span className="text-[10px] text-zinc-400 border border-zinc-200 rounded-full px-2 py-0.5 font-medium uppercase tracking-wider">
+            Agent 1
+          </span>
+          {open ? <ChevronUp size={14} className="text-zinc-400" /> : <ChevronDown size={14} className="text-zinc-400" />}
         </div>
       </button>
 
       {open && (
-        <div className="border-t border-gray-100 px-5 py-5 space-y-6">
+        <div className="border-t border-zinc-100 px-6 py-6 space-y-6">
 
-          {/* Summary */}
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Meeting summary</p>
-            <p className="text-sm text-gray-700 leading-relaxed">{analysis.meeting_summary}</p>
+            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em] mb-2">Summary</p>
+            <p className="text-sm text-zinc-600 leading-relaxed">{analysis.meeting_summary}</p>
             {analysis.inferred_meeting_purpose && (
-              <p className="text-xs text-gray-400 mt-2 italic">Purpose: {analysis.inferred_meeting_purpose}</p>
+              <p className="text-xs text-zinc-400 italic mt-2">Purpose: {analysis.inferred_meeting_purpose}</p>
             )}
           </div>
 
-          {/* Decisions */}
           {analysis.decisions_made.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <CheckCircle2 size={13} className="text-indigo-500" />
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Decisions made</p>
+                <CheckCircle2 size={12} className="text-indigo-400" />
+                <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em]">Decisions made</p>
               </div>
               <div className="space-y-2">
                 {analysis.decisions_made.map((d, i) => (
-                  <div key={i} className="flex items-start gap-2.5 text-sm">
+                  <div key={i} className="flex items-start gap-2">
                     <ConfidencePip level={d.confidence} />
-                    <div>
-                      <span className="text-gray-800">{d.decision}</span>
+                    <div className="text-sm text-zinc-700">
+                      {d.decision}
                       {d.owner_or_decider && d.owner_or_decider !== 'unclear' && (
-                        <span className="text-gray-400 text-xs ml-1.5">· {d.owner_or_decider}</span>
+                        <span className="text-zinc-400 text-xs ml-1.5">· {d.owner_or_decider}</span>
                       )}
                     </div>
                   </div>
@@ -197,20 +269,19 @@ function MeetingIntelligence({ analysis }: { analysis: MeetingAnalysis }) {
             </div>
           )}
 
-          {/* Action items */}
           {analysis.action_items.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <ListTodo size={13} className="text-emerald-500" />
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Action items</p>
+                <ListTodo size={12} className="text-emerald-500" />
+                <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em]">Action items</p>
               </div>
               <div className="space-y-2">
                 {analysis.action_items.map((a, i) => (
-                  <div key={i} className="flex items-start gap-2.5 text-sm">
+                  <div key={i} className="flex items-start gap-2">
                     <ConfidencePip level={a.confidence} />
-                    <div>
-                      <span className="text-gray-800">{a.task}</span>
-                      <span className="text-gray-400 text-xs ml-1.5">
+                    <div className="text-sm text-zinc-700">
+                      {a.task}
+                      <span className="text-zinc-400 text-xs ml-1.5">
                         · {a.owner !== 'unclear' ? a.owner : 'Owner unclear'}
                         {a.due_date ? ` · ${a.due_date}` : ''}
                       </span>
@@ -221,32 +292,34 @@ function MeetingIntelligence({ analysis }: { analysis: MeetingAnalysis }) {
             </div>
           )}
 
-          {/* Open questions */}
           {analysis.open_questions.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Open questions</p>
+              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em] mb-3">Open questions</p>
               <ul className="space-y-1.5">
                 {analysis.open_questions.map((q, i) => (
-                  <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                    <span className="text-gray-300 mt-0.5">·</span>
-                    {q}
+                  <li key={i} className="text-sm text-zinc-600 flex items-start gap-2">
+                    <span className="text-zinc-300 mt-0.5 flex-shrink-0">·</span>{q}
                   </li>
                 ))}
               </ul>
             </div>
           )}
 
-          {/* Participant positions */}
           {analysis.participant_positions.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Participant positions</p>
+              <div className="flex items-center gap-2 mb-3">
+                <Users size={12} className="text-zinc-400" />
+                <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em]">Participant positions</p>
+              </div>
               <div className="space-y-3">
                 {analysis.participant_positions.map((p, i) => (
-                  <div key={i} className="text-sm">
-                    <span className="font-medium text-gray-800">{p.participant}</span>
-                    <span className="text-gray-500"> — {p.observed_position}</span>
+                  <div key={i}>
+                    <p className="text-sm text-zinc-700">
+                      <span className="font-semibold text-zinc-900">{p.participant}</span>
+                      <span className="text-zinc-500"> — {p.observed_position}</span>
+                    </p>
                     {p.evidence && (
-                      <p className="text-xs text-gray-400 italic mt-0.5">"{p.evidence}"</p>
+                      <p className="text-xs text-zinc-400 italic mt-0.5 leading-relaxed">"{p.evidence}"</p>
                     )}
                   </div>
                 ))}
@@ -254,17 +327,16 @@ function MeetingIntelligence({ analysis }: { analysis: MeetingAnalysis }) {
             </div>
           )}
 
-          {/* Notable moments */}
           {analysis.notable_moments.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Notable moments</p>
-              <div className="space-y-3">
+              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em] mb-3">Notable moments</p>
+              <div className="space-y-2.5">
                 {analysis.notable_moments.map((n, i) => (
-                  <div key={i} className="border border-gray-100 rounded-lg p-3">
-                    <p className="text-sm font-medium text-gray-800 mb-1">{n.moment}</p>
-                    <p className="text-xs text-gray-500 mb-1.5">{n.why_it_matters}</p>
+                  <div key={i} className="bg-zinc-50 rounded-xl border border-zinc-100 p-4">
+                    <p className="text-sm font-semibold text-zinc-800 mb-1">{n.moment}</p>
+                    <p className="text-xs text-zinc-500 mb-1.5 leading-relaxed">{n.why_it_matters}</p>
                     {n.transcript_evidence && (
-                      <p className="text-xs text-gray-400 italic">"{n.transcript_evidence}"</p>
+                      <p className="text-xs text-zinc-400 italic">"{n.transcript_evidence}"</p>
                     )}
                   </div>
                 ))}
@@ -272,12 +344,11 @@ function MeetingIntelligence({ analysis }: { analysis: MeetingAnalysis }) {
             </div>
           )}
 
-          {/* Analyst flags */}
           {analysis.analyst_flags.length > 0 && (
-            <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
-                <HelpCircle size={13} className="text-amber-500" />
-                <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">Analyst flags</p>
+                <AlertCircle size={12} className="text-amber-500" />
+                <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-[0.1em]">Analyst flags</p>
               </div>
               <ul className="space-y-1">
                 {analysis.analyst_flags.map((flag, i) => (
@@ -287,29 +358,82 @@ function MeetingIntelligence({ analysis }: { analysis: MeetingAnalysis }) {
             </div>
           )}
 
-          {/* Missing context */}
           {analysis.missing_context.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Missing context</p>
+              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em] mb-2">Missing context</p>
               <ul className="space-y-1">
-                {analysis.missing_context.map((m, i) => (
-                  <li key={i} className="text-xs text-gray-500">· {m}</li>
+                {analysis.missing_context.map((ctx, i) => (
+                  <li key={i} className="text-xs text-zinc-500">· {ctx}</li>
                 ))}
               </ul>
             </div>
           )}
-
         </div>
       )}
     </div>
   )
 }
 
+// ─── Next Steps ────────────────────────────────────────────────────────────────
+
+function NextSteps({ steps }: { steps: Array<{ action: string; timing: string }> }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-sm">
+      <button
+        className="w-full text-left px-6 py-5 hover:bg-zinc-50/60 transition-colors"
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4 flex-1">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <MessageSquare size={14} className="text-indigo-500" />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.1em] mb-1">Before your next meeting</p>
+              <p className="text-sm font-semibold text-zinc-900">
+                {steps.length} specific action{steps.length !== 1 ? 's' : ''} to take
+              </p>
+            </div>
+          </div>
+          {open ? <ChevronUp size={15} className="text-zinc-400 mt-1" /> : <ChevronDown size={15} className="text-zinc-400 mt-1" />}
+        </div>
+      </button>
+
+      {open && (
+        <div className="border-t border-zinc-100 px-6 py-6">
+          <div className="space-y-3">
+            {steps.map((step, i) => (
+              <div key={i} className="flex items-start gap-4 bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                <div className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                  {i + 1}
+                </div>
+                <div>
+                  <p className="text-sm text-zinc-800 leading-relaxed mb-1.5">{step.action}</p>
+                  <div className="flex items-center gap-1.5">
+                    <ArrowRight size={10} className="text-indigo-400" />
+                    <p className="text-xs text-indigo-600 font-semibold">{step.timing}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Section config ────────────────────────────────────────────────────────────
+
 const SECTION_CONFIG = {
   strategic_communication: { title: 'Strategic Communication', icon: Target },
   tone_and_presence: { title: 'Tone & Presence', icon: Mic },
   clarity: { title: 'Clarity', icon: FileText },
 } as const
+
+// ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ResultsPage() {
   const params = useParams()
@@ -330,8 +454,8 @@ export default function ResultsPage() {
 
   if (loading || !session) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-zinc-100 flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -340,9 +464,9 @@ export default function ResultsPage() {
 
   if (!c.overall_summary) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-100 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">This session uses an older format.</p>
+          <p className="text-zinc-500 mb-4">This session uses an older format.</p>
           <Link href="/dashboard" className="text-indigo-600 text-sm">Back to sessions</Link>
         </div>
       </div>
@@ -350,24 +474,30 @@ export default function ResultsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
-            <ArrowLeft size={16} />
+    <div className="min-h-screen bg-[#f4f4f5]">
+
+      {/* Nav */}
+      <nav className="bg-white border-b border-zinc-200 px-6 py-4 sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+          >
+            <ArrowLeft size={15} />
             All sessions
           </Link>
-          <span className="text-sm font-medium text-gray-900">Signal</span>
-          <span className="text-xs text-gray-400">{formatDate(session.createdAt)}</span>
+          <span className="text-sm font-semibold text-zinc-900 tracking-tight">Signal</span>
+          <span className="text-xs text-zinc-400">{formatDate(session.createdAt)}</span>
         </div>
       </nav>
 
-      <main className="max-w-3xl mx-auto px-6 py-10 space-y-5">
+      <main className="max-w-2xl mx-auto px-6 py-10 space-y-4">
+
         {/* Header */}
         <div className="fade-in">
-          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">Coaching report</p>
-          <h1 className="text-xl font-semibold text-gray-900 mb-1">{session.meetingTitle}</h1>
-          <p className="text-sm text-gray-500">Goal: {session.userGoal}</p>
+          <p className="text-[11px] text-zinc-400 uppercase tracking-[0.1em] font-semibold mb-1">Coaching report</p>
+          <h1 className="text-xl font-semibold text-zinc-900 tracking-tight">{session.meetingTitle}</h1>
+          <p className="text-sm text-zinc-500 mt-1">Goal: {session.userGoal}</p>
         </div>
 
         {/* Goal indicator */}
@@ -375,43 +505,26 @@ export default function ResultsPage() {
           <GoalIndicator score={session.goalScore} headline={c.overall_summary.headline} />
         </div>
 
-        {/* Meeting Intelligence (Agent 1 output) */}
+        {/* Signal Summary */}
+        <div className="fade-in-2">
+          <SignalSummary
+            whatLanded={c.overall_summary.what_landed}
+            nextMoves={c.overall_summary.next_moves}
+          />
+        </div>
+
+        {/* Meeting Intelligence */}
         {session.meetingAnalysis && (
-          <div className="fade-in-1">
+          <div className="fade-in-2">
             <MeetingIntelligence analysis={session.meetingAnalysis} />
           </div>
         )}
 
-        {/* Signal Summary */}
-        <div className="fade-in-2 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="grid grid-cols-2 divide-x divide-gray-100">
-            <div className="p-5">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">What landed</p>
-              <ul className="space-y-3">
-                {c.overall_summary.what_landed.map((s, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="mt-0.5 w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                      <Check size={9} className="text-emerald-600" />
-                    </span>
-                    <span className="text-sm text-gray-700 leading-snug">{s}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="p-5">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Your next 3 moves</p>
-              <ol className="space-y-3">
-                {c.overall_summary.next_moves.map((m, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="mt-0.5 w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-indigo-600">
-                      {i + 1}
-                    </span>
-                    <span className="text-sm text-gray-700 leading-snug">{m}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
+        {/* Divider label */}
+        <div className="flex items-center gap-3 py-2 fade-in-3">
+          <div className="flex-1 h-px bg-zinc-200" />
+          <p className="text-[11px] text-zinc-400 uppercase tracking-[0.1em] font-semibold">Coaching breakdown</p>
+          <div className="flex-1 h-px bg-zinc-200" />
         </div>
 
         {/* Coaching sections */}
@@ -419,47 +532,25 @@ export default function ResultsPage() {
           const config = SECTION_CONFIG[section.id]
           if (!config) return null
           return (
-            <div key={section.id} className={`fade-in-${i + 2}`}>
-              <ExpandableCard
-                title={config.title}
-                description={section.one_line_summary}
+            <div key={section.id} className={`fade-in-${i + 3}`}>
+              <CoachingCard
+                section={section}
                 icon={config.icon}
-              >
-                <SectionContent section={section} />
-              </ExpandableCard>
+                title={config.title}
+                index={i}
+              />
             </div>
           )
         })}
 
         {/* Next Steps */}
         {c.next_steps.length > 0 && (
-          <div className="fade-in-4">
-            <ExpandableCard
-              title="Before Your Next Meeting"
-              description="Specific actions to build on this session"
-              icon={MessageSquare}
-            >
-              <div className="space-y-3">
-                {c.next_steps.map((step, i) => (
-                  <div key={i} className="flex items-start gap-3 bg-indigo-50 border border-indigo-100 rounded-lg p-4">
-                    <div className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
-                      {i + 1}
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-800 leading-relaxed mb-1">{step.action}</p>
-                      <div className="flex items-center gap-1.5">
-                        <ArrowRight size={11} className="text-indigo-400" />
-                        <p className="text-xs text-indigo-600 font-medium">{step.timing}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ExpandableCard>
+          <div className="fade-in-5">
+            <NextSteps steps={c.next_steps} />
           </div>
         )}
 
-        <div className="h-8" />
+        <div className="h-10" />
       </main>
     </div>
   )

@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SYSTEM_PROMPT } from '@/lib/system-prompt'
 import { MEETING_ANALYST_PROMPT } from '@/lib/meeting-analyst-prompt'
 import type { Participant } from '@/types'
+
+export const maxDuration = 60 // seconds — required for two sequential Claude calls
 import type { UserProfile } from '@/lib/profile'
 
 const client = new Anthropic()
