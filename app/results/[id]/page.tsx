@@ -5,13 +5,14 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, ArrowRight, Target, MessageSquare, Mic, FileText,
-  ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Minus, Check
+  ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Minus, Check,
+  Brain, ListTodo, HelpCircle
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { getSession } from '@/lib/storage'
 import { formatDate } from '@/lib/utils'
-import type { Session, GoalScore, CoachingSection } from '@/types'
+import type { Session, GoalScore, CoachingSection, MeetingAnalysis } from '@/types'
 
 function GoalIndicator({ score, headline }: { score: GoalScore; headline: string }) {
   const config = {
@@ -130,6 +131,180 @@ function SectionContent({ section }: { section: CoachingSection }) {
   )
 }
 
+function ConfidencePip({ level }: { level: 'high' | 'medium' | 'low' }) {
+  const color = { high: 'bg-emerald-400', medium: 'bg-amber-400', low: 'bg-red-400' }[level]
+  return <span className={`inline-block w-1.5 h-1.5 rounded-full ${color} mr-1.5`} />
+}
+
+function MeetingIntelligence({ analysis }: { analysis: MeetingAnalysis }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="border border-gray-200 rounded-xl bg-white overflow-hidden">
+      <button
+        className="w-full text-left px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0">
+            <Brain size={14} className="text-slate-500" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Meeting Intelligence</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {analysis.decisions_made.length} decisions · {analysis.action_items.length} action items · {analysis.open_questions.length} open questions
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-slate-400 uppercase tracking-widest border border-slate-200 rounded-full px-2 py-0.5">Agent 1</span>
+          {open ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
+        </div>
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100 px-5 py-5 space-y-6">
+
+          {/* Summary */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Meeting summary</p>
+            <p className="text-sm text-gray-700 leading-relaxed">{analysis.meeting_summary}</p>
+            {analysis.inferred_meeting_purpose && (
+              <p className="text-xs text-gray-400 mt-2 italic">Purpose: {analysis.inferred_meeting_purpose}</p>
+            )}
+          </div>
+
+          {/* Decisions */}
+          {analysis.decisions_made.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle2 size={13} className="text-indigo-500" />
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Decisions made</p>
+              </div>
+              <div className="space-y-2">
+                {analysis.decisions_made.map((d, i) => (
+                  <div key={i} className="flex items-start gap-2.5 text-sm">
+                    <ConfidencePip level={d.confidence} />
+                    <div>
+                      <span className="text-gray-800">{d.decision}</span>
+                      {d.owner_or_decider && d.owner_or_decider !== 'unclear' && (
+                        <span className="text-gray-400 text-xs ml-1.5">· {d.owner_or_decider}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Action items */}
+          {analysis.action_items.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <ListTodo size={13} className="text-emerald-500" />
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Action items</p>
+              </div>
+              <div className="space-y-2">
+                {analysis.action_items.map((a, i) => (
+                  <div key={i} className="flex items-start gap-2.5 text-sm">
+                    <ConfidencePip level={a.confidence} />
+                    <div>
+                      <span className="text-gray-800">{a.task}</span>
+                      <span className="text-gray-400 text-xs ml-1.5">
+                        · {a.owner !== 'unclear' ? a.owner : 'Owner unclear'}
+                        {a.due_date ? ` · ${a.due_date}` : ''}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Open questions */}
+          {analysis.open_questions.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Open questions</p>
+              <ul className="space-y-1.5">
+                {analysis.open_questions.map((q, i) => (
+                  <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
+                    <span className="text-gray-300 mt-0.5">·</span>
+                    {q}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Participant positions */}
+          {analysis.participant_positions.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Participant positions</p>
+              <div className="space-y-3">
+                {analysis.participant_positions.map((p, i) => (
+                  <div key={i} className="text-sm">
+                    <span className="font-medium text-gray-800">{p.participant}</span>
+                    <span className="text-gray-500"> — {p.observed_position}</span>
+                    {p.evidence && (
+                      <p className="text-xs text-gray-400 italic mt-0.5">"{p.evidence}"</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notable moments */}
+          {analysis.notable_moments.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Notable moments</p>
+              <div className="space-y-3">
+                {analysis.notable_moments.map((n, i) => (
+                  <div key={i} className="border border-gray-100 rounded-lg p-3">
+                    <p className="text-sm font-medium text-gray-800 mb-1">{n.moment}</p>
+                    <p className="text-xs text-gray-500 mb-1.5">{n.why_it_matters}</p>
+                    {n.transcript_evidence && (
+                      <p className="text-xs text-gray-400 italic">"{n.transcript_evidence}"</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Analyst flags */}
+          {analysis.analyst_flags.length > 0 && (
+            <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <HelpCircle size={13} className="text-amber-500" />
+                <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">Analyst flags</p>
+              </div>
+              <ul className="space-y-1">
+                {analysis.analyst_flags.map((flag, i) => (
+                  <li key={i} className="text-xs text-amber-700 leading-relaxed">· {flag}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Missing context */}
+          {analysis.missing_context.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Missing context</p>
+              <ul className="space-y-1">
+                {analysis.missing_context.map((m, i) => (
+                  <li key={i} className="text-xs text-gray-500">· {m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+        </div>
+      )}
+    </div>
+  )
+}
+
 const SECTION_CONFIG = {
   strategic_communication: { title: 'Strategic Communication', icon: Target },
   tone_and_presence: { title: 'Tone & Presence', icon: Mic },
@@ -199,6 +374,13 @@ export default function ResultsPage() {
         <div className="fade-in-1">
           <GoalIndicator score={session.goalScore} headline={c.overall_summary.headline} />
         </div>
+
+        {/* Meeting Intelligence (Agent 1 output) */}
+        {session.meetingAnalysis && (
+          <div className="fade-in-1">
+            <MeetingIntelligence analysis={session.meetingAnalysis} />
+          </div>
+        )}
 
         {/* Signal Summary */}
         <div className="fade-in-2 bg-white border border-gray-200 rounded-xl overflow-hidden">

@@ -1,6 +1,7 @@
 export type GoalScore = 'red' | 'yellow' | 'green'
 export type Importance = 'high' | 'medium' | 'low'
 export type TranscriptFormat = 'zoom' | 'raw'
+export type Confidence = 'high' | 'medium' | 'low'
 
 export interface Participant {
   id: string
@@ -18,6 +19,41 @@ export interface DraftSession {
   userGoal: string
 }
 
+// Agent 1: Meeting Analyst output
+export interface MeetingAnalysis {
+  meeting_summary: string
+  inferred_meeting_purpose: string
+  discussion_sections: Array<{
+    section_title: string
+    summary: string
+    key_moments: string[]
+  }>
+  decisions_made: Array<{
+    decision: string
+    owner_or_decider: string
+    confidence: Confidence
+  }>
+  open_questions: string[]
+  action_items: Array<{
+    owner: string
+    task: string
+    due_date: string | null
+    confidence: Confidence
+  }>
+  participant_positions: Array<{
+    participant: string
+    observed_position: string
+    evidence: string
+  }>
+  notable_moments: Array<{
+    moment: string
+    why_it_matters: string
+    transcript_evidence: string
+  }>
+  missing_context: string[]
+  analyst_flags: string[]
+}
+
 export interface Session {
   id: string
   createdAt: string
@@ -29,6 +65,7 @@ export interface Session {
   userSeniority: string
   meetingTitle: string
   participants: Participant[]
+  meetingAnalysis?: MeetingAnalysis
   coachingOutput: CoachingOutput
   goalScore: GoalScore
 }

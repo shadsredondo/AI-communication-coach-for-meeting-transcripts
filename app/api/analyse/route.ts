@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { SYSTEM_PROMPT } from '@/lib/system-prompt'
+import { MEETING_ANALYST_PROMPT } from '@/lib/meeting-analyst-prompt'
 import type { Participant } from '@/types'
 import type { UserProfile } from '@/lib/profile'
 
@@ -58,7 +59,43 @@ export async function POST(request: NextRequest) {
         ].filter(Boolean).join('\n')
       : `Role: ${userTitle}\nSeniority: ${userSeniority}`
 
-    const userMessage = `## Meeting transcript
+    // ─── Agent 1: Meeting Analyst ───────────────────────────────────────────
+    const analystMessage = `## Meeting transcript
+${transcript}
+
+## Meeting context
+Title: ${meetingTitle}
+Goal stated by user: ${userGoal}
+
+## Participants
+${participantList}`
+
+    const analystResponse = await client.messages.create({
+      model: 'claude-opus-4-7',
+      max_tokens: 4096,
+      system: MEETING_ANALYST_PROMPT,
+      messages: [{ role: 'user', content: analystMessage }],
+    })
+
+    const analystBlock = analystResponse.content.find(b => b.type === 'text')
+    if (!analystBlock || analystBlock.type !== 'text') {
+      return NextResponse.json({ error: 'Meeting Analyst returned no response' }, { status: 500 })
+    }
+
+    let meetingAnalysis
+    try {
+      meetingAnalysis = JSON.parse(analystBlock.text)
+    } catch {
+      console.error('Failed to parse Meeting Analyst response:', analystBlock.text.slice(0, 500))
+      return NextResponse.json({ error: 'Failed to parse meeting analysis' }, { status: 500 })
+    }
+
+    // ─── Agent 2: Sage (Coaching) ────────────────────────────────────────────
+    // Sage receives structured intelligence from Agent 1 instead of raw transcript
+    const coachingMessage = `## Meeting Intelligence Report (from Meeting Analyst Agent)
+${JSON.stringify(meetingAnalysis, null, 2)}
+
+## Original transcript (for direct quote verification)
 ${transcript}
 
 ## Meeting context
@@ -71,31 +108,28 @@ ${participantList}
 ## Your profile
 ${profileSection}`
 
-    if (!userMessage.trim()) {
-      return NextResponse.json({ error: 'Message content is empty — check your inputs' }, { status: 400 })
-    }
-
-    const response = await client.messages.create({
+    const coachingResponse = await client.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 8192,
-      system: SYSTEM_PROMPT || undefined,
-      messages: [{ role: 'user', content: userMessage }],
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: coachingMessage }],
     })
 
-    const textBlock = response.content.find(b => b.type === 'text')
-    if (!textBlock || textBlock.type !== 'text') {
-      return NextResponse.json({ error: 'No response from model' }, { status: 500 })
+    const coachingBlock = coachingResponse.content.find(b => b.type === 'text')
+    if (!coachingBlock || coachingBlock.type !== 'text') {
+      return NextResponse.json({ error: 'Coaching agent returned no response' }, { status: 500 })
     }
 
-    let coaching
+    let coachingOutput
     try {
-      coaching = JSON.parse(textBlock.text)
+      coachingOutput = JSON.parse(coachingBlock.text)
     } catch {
-      console.error('Failed to parse model response:', textBlock.text.slice(0, 500))
+      console.error('Failed to parse coaching response:', coachingBlock.text.slice(0, 500))
       return NextResponse.json({ error: 'Failed to parse coaching output' }, { status: 500 })
     }
 
-    return NextResponse.json(coaching)
+    return NextResponse.json({ meetingAnalysis, coachingOutput })
+
   } catch (error) {
     if (error instanceof Anthropic.AuthenticationError) {
       return NextResponse.json({ error: 'Invalid API key — check your .env.local file' }, { status: 401 })

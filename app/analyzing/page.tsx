@@ -7,13 +7,13 @@ import { Check, ArrowLeft } from 'lucide-react'
 import { getDraft, saveSession, clearDraft } from '@/lib/storage'
 import { getProfile } from '@/lib/profile'
 import { generateId } from '@/lib/utils'
-import type { CoachingOutput } from '@/types'
+import type { CoachingOutput, MeetingAnalysis } from '@/types'
 
 const STEPS = [
-  { label: 'Identifying speakers', duration: 800 },
-  { label: 'Detecting tone shifts', duration: 1000 },
-  { label: 'Mapping stakeholder dynamics', duration: 1200 },
-  { label: 'Finding missed opportunities', duration: 900 },
+  { label: 'Parsing transcript', duration: 700 },
+  { label: 'Mapping speakers and decisions', duration: 1000 },
+  { label: 'Building meeting intelligence', duration: 1300 },
+  { label: 'Analyzing your communication', duration: 1500 },
   { label: 'Preparing your coaching', duration: 700 },
 ]
 
@@ -34,11 +34,12 @@ export default function AnalyzingPage() {
     let stepsFinished = false
     let apiFinished = false
     let coachingResult: CoachingOutput | null = null
+    let meetingAnalysisResult: MeetingAnalysis | null = null
     let apiError: string | null = null
 
     function tryComplete() {
       if (!stepsFinished || !apiFinished) return
-      if (apiError || !coachingResult) {
+      if (apiError || !coachingResult || !meetingAnalysisResult) {
         setError(apiError || 'Something went wrong — please try again.')
         return
       }
@@ -46,8 +47,9 @@ export default function AnalyzingPage() {
       const outcomeToScore = { strong: 'green', partial: 'yellow', off_track: 'red' } as const
       const goalScore = outcomeToScore[coachingResult.goal_outcome as keyof typeof outcomeToScore] ?? 'yellow'
 
+      const sessionId = generateId()
       const session = {
-        id: generateId(),
+        id: sessionId,
         createdAt: new Date().toISOString(),
         transcript: safeDraft.transcript,
         transcriptFormat: safeDraft.transcriptFormat,
@@ -57,13 +59,14 @@ export default function AnalyzingPage() {
         userSeniority: '',
         meetingTitle: 'Meeting',
         participants: safeDraft.participants,
+        meetingAnalysis: meetingAnalysisResult,
         coachingOutput: coachingResult,
         goalScore,
       }
 
       saveSession(session)
       clearDraft()
-      router.push(`/results/${session.id}`)
+      router.push(`/meeting-analysis/${sessionId}`)
     }
 
     // Fake steps animation
@@ -86,7 +89,7 @@ export default function AnalyzingPage() {
     }
     runNextStep()
 
-    // Real API call in parallel
+    // Real API call (sequential agents happen server-side)
     fetch('/api/analyse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -107,7 +110,8 @@ export default function AnalyzingPage() {
         if (!res.ok) {
           apiError = data.error || 'Analysis failed — please try again.'
         } else {
-          coachingResult = data
+          meetingAnalysisResult = data.meetingAnalysis
+          coachingResult = data.coachingOutput
         }
         apiFinished = true
         tryComplete()
@@ -152,7 +156,7 @@ export default function AnalyzingPage() {
 
           <h1 className="text-2xl font-semibold text-white mb-2 fade-in">Reading the room…</h1>
           <p className="text-sm text-gray-500 mb-10 fade-in-1">
-            Analyzing your conversation
+            Two agents are working on your meeting
           </p>
 
           <div className="text-left space-y-3">
@@ -160,34 +164,45 @@ export default function AnalyzingPage() {
               const isDone = completedSteps.includes(i)
               const isActive = currentStep === i && !isDone
 
+              // Visual divider between agent 1 and agent 2 steps
+              const showDivider = i === 3
+
               return (
-                <div
-                  key={i}
-                  className={`flex items-center gap-3 transition-all duration-300 ${
-                    i > currentStep && !isDone ? 'opacity-30' : 'opacity-100'
-                  }`}
-                >
+                <div key={i}>
+                  {showDivider && (
+                    <div className="flex items-center gap-2 py-1 px-1">
+                      <div className="flex-1 h-px bg-white/5" />
+                      <span className="text-[10px] text-gray-600 uppercase tracking-widest">coaching agent</span>
+                      <div className="flex-1 h-px bg-white/5" />
+                    </div>
+                  )}
                   <div
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                      isDone
-                        ? 'bg-indigo-600 border-indigo-600'
-                        : isActive
-                        ? 'border-indigo-500 bg-transparent'
-                        : 'border-gray-700 bg-transparent'
+                    className={`flex items-center gap-3 transition-all duration-300 ${
+                      i > currentStep && !isDone ? 'opacity-30' : 'opacity-100'
                     }`}
                   >
-                    {isDone && <Check size={11} className="text-white" strokeWidth={3} />}
-                    {isActive && (
-                      <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                    )}
+                    <div
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                        isDone
+                          ? 'bg-indigo-600 border-indigo-600'
+                          : isActive
+                          ? 'border-indigo-500 bg-transparent'
+                          : 'border-gray-700 bg-transparent'
+                      }`}
+                    >
+                      {isDone && <Check size={11} className="text-white" strokeWidth={3} />}
+                      {isActive && (
+                        <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                      )}
+                    </div>
+                    <span
+                      className={`text-sm transition-colors duration-300 ${
+                        isDone ? 'text-gray-400' : isActive ? 'text-white' : 'text-gray-600'
+                      }`}
+                    >
+                      {step.label}
+                    </span>
                   </div>
-                  <span
-                    className={`text-sm transition-colors duration-300 ${
-                      isDone ? 'text-gray-400' : isActive ? 'text-white' : 'text-gray-600'
-                    }`}
-                  >
-                    {step.label}
-                  </span>
                 </div>
               )
             })}
