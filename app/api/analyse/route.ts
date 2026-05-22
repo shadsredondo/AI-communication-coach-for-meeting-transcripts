@@ -9,8 +9,11 @@ import type { UserProfile } from '@/lib/profile'
 
 const client = new Anthropic()
 
-function stripCodeFences(text: string): string {
-  return text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+function extractJSON(text: string): string {
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start === -1 || end === -1) throw new Error(`No JSON object found. Raw response: ${text.slice(0, 300)}`)
+  return text.slice(start, end + 1)
 }
 
 export async function POST(request: NextRequest) {
@@ -90,9 +93,10 @@ ${participantList}`
 
     let meetingAnalysis
     try {
-      meetingAnalysis = JSON.parse(stripCodeFences(analystBlock.text))
-    } catch {
-      console.error('Failed to parse Meeting Analyst response:', analystBlock.text.slice(0, 500))
+      meetingAnalysis = JSON.parse(extractJSON(analystBlock.text))
+    } catch (e) {
+      console.error('Failed to parse Meeting Analyst response:', e)
+      console.error('Raw analyst text:', analystBlock.text)
       return NextResponse.json({ error: 'Failed to parse meeting analysis' }, { status: 500 })
     }
 
@@ -128,9 +132,10 @@ ${profileSection}`
 
     let coachingOutput
     try {
-      coachingOutput = JSON.parse(stripCodeFences(coachingBlock.text))
-    } catch {
-      console.error('Failed to parse coaching response:', coachingBlock.text.slice(0, 500))
+      coachingOutput = JSON.parse(extractJSON(coachingBlock.text))
+    } catch (e) {
+      console.error('Failed to parse coaching response:', e)
+      console.error('Raw coaching text:', coachingBlock.text)
       return NextResponse.json({ error: 'Failed to parse coaching output' }, { status: 500 })
     }
 
