@@ -73,7 +73,7 @@ Goal stated by user: ${userGoal}
 ${participantList}`
 
     const analystResponse = await client.messages.create({
-      model: 'claude-opus-4-7',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       system: MEETING_ANALYST_PROMPT,
       messages: [{ role: 'user', content: analystMessage }],
@@ -111,7 +111,7 @@ ${participantList}
 ${profileSection}`
 
     const coachingResponse = await client.messages.create({
-      model: 'claude-opus-4-7',
+      model: 'claude-sonnet-4-6',
       max_tokens: 8192,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: coachingMessage }],
