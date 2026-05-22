@@ -81,7 +81,7 @@ ${participantList}`
 
     const analystResponse = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
+      max_tokens: 2048,
       system: MEETING_ANALYST_PROMPT,
       messages: [{ role: 'user', content: analystMessage }],
     })
@@ -120,7 +120,7 @@ ${profileSection}`
 
     const coachingResponse = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 8192,
+      max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: coachingMessage }],
     })
