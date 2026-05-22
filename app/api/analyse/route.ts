@@ -9,6 +9,10 @@ import type { UserProfile } from '@/lib/profile'
 
 const client = new Anthropic()
 
+function stripCodeFences(text: string): string {
+  return text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -86,7 +90,7 @@ ${participantList}`
 
     let meetingAnalysis
     try {
-      meetingAnalysis = JSON.parse(analystBlock.text)
+      meetingAnalysis = JSON.parse(stripCodeFences(analystBlock.text))
     } catch {
       console.error('Failed to parse Meeting Analyst response:', analystBlock.text.slice(0, 500))
       return NextResponse.json({ error: 'Failed to parse meeting analysis' }, { status: 500 })
@@ -124,7 +128,7 @@ ${profileSection}`
 
     let coachingOutput
     try {
-      coachingOutput = JSON.parse(coachingBlock.text)
+      coachingOutput = JSON.parse(stripCodeFences(coachingBlock.text))
     } catch {
       console.error('Failed to parse coaching response:', coachingBlock.text.slice(0, 500))
       return NextResponse.json({ error: 'Failed to parse coaching output' }, { status: 500 })
