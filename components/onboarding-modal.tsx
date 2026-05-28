@@ -50,6 +50,7 @@ const EMPTY: UserProfile = {
   seniority: '',
   companyName: '',
   companySize: '',
+  workEnvironment: '',
   communicationChallenge: '',
   goal: '',
 }

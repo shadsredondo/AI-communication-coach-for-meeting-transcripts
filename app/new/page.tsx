@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { saveDraft } from '@/lib/storage'
+import { hasProfile } from '@/lib/profile'
 import { parseTranscript, extractRolesFromTranscript } from '@/lib/transcript-parser'
 import { lookupRole } from '@/lib/stakeholders'
 import { ROLE_GROUPS, getAllRoles, addCustomRole } from '@/lib/default-roles'
@@ -157,6 +158,11 @@ export default function NewMeetingPage() {
   const [customGoal, setCustomGoal] = useState('')
   const [userTitle, setUserTitle] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Redirect to setup if no profile
+  useEffect(() => {
+    if (!hasProfile()) router.replace('/setup')
+  }, [router])
 
   useEffect(() => {
     const timer = setTimeout(() => {
