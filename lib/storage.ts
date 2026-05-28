@@ -1,5 +1,6 @@
 import { Session, DraftSession } from '@/types'
 import { upsertStakeholders } from '@/lib/stakeholders'
+import { supabase } from '@/lib/supabase'
 
 const SESSIONS_KEY = 'signal_sessions'
 const DRAFT_KEY = 'signal_draft'
@@ -49,4 +50,28 @@ export function saveDraft(data: DraftSession): void {
 
 export function clearDraft(): void {
   sessionStorage.removeItem(DRAFT_KEY)
+}
+
+/** Save a session to Supabase (called when user signs up from results page) */
+export async function saveSessionToSupabase(session: Session): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  await supabase.from('sessions').upsert({
+    id: session.id,
+    user_id: user.id,
+    created_at: session.createdAt,
+    transcript: session.transcript,
+    transcript_format: session.transcriptFormat,
+    user_goal: session.userGoal,
+    user_title: session.userTitle,
+    user_function: session.userFunction || '',
+    user_seniority: session.userSeniority || '',
+    meeting_title: session.meetingTitle || '',
+    goal_score: session.goalScore,
+    participants: session.participants,
+    meeting_analysis: session.meetingAnalysis ?? null,
+    deterministic_analysis: session.deterministicAnalysis ?? null,
+    coaching_output: session.coachingOutput ?? null,
+  })
 }

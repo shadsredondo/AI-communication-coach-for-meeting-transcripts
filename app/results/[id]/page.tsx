@@ -8,8 +8,9 @@ import {
   ChevronDown, ChevronUp, Check, Users, Eye, AlertTriangle,
   MoveRight, Zap
 } from 'lucide-react'
-import { getSession, saveSession } from '@/lib/storage'
-import { getProfile } from '@/lib/profile'
+import { getSession, saveSession, saveSessionToSupabase } from '@/lib/storage'
+import { getProfile, saveProfileToSupabase } from '@/lib/profile'
+import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import type {
   Session, GoalScore, CoachingSection, DeterministicAnalysis,
@@ -544,6 +545,86 @@ const SECTION_CONFIG = {
   clarity:                 { title: 'Clarity',                 icon: FileText },
 } as const
 
+// ─── Save progress banner ──────────────────────────────────────────────────────
+
+function SaveProgressBanner({ session }: { session: Session }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [saved, setSaved] = useState(false)
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email.trim() || !password.trim()) { setError('Please fill in both fields.'); return }
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
+    setLoading(true)
+    setError('')
+
+    const { error: signUpError } = await supabase.auth.signUp({ email, password })
+    if (signUpError) { setError(signUpError.message); setLoading(false); return }
+
+    // Save session + profile to Supabase
+    await saveSessionToSupabase(session)
+    const profile = getProfile()
+    if (profile) await saveProfileToSupabase(profile)
+
+    setSaved(true)
+  }
+
+  if (saved) {
+    return (
+      <div className="bg-[#F0EBE3] border border-[#E8DFD3] rounded-2xl px-6 py-5 text-center">
+        <p className="text-sm font-semibold text-[#1C1510] mb-1">You're all set ✓</p>
+        <p className="text-xs text-[#78716C]">Your report is saved. Sign in anytime to pick up where you left off.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl overflow-hidden">
+      <div className="px-6 pt-6 pb-5">
+        <p className="text-base font-semibold text-[#1C1510] mb-1">
+          Keep this report. Track how you improve.
+        </p>
+        <p className="text-sm text-[#78716C] mb-5 leading-relaxed">
+          Create a free account and every coaching report you generate will be saved — so you can see your growth over time.
+        </p>
+
+        <form onSubmit={handleSave} className="space-y-3">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setError('') }}
+            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
+          />
+          <input
+            type="password"
+            placeholder="Password (6+ characters)"
+            value={password}
+            onChange={e => { setPassword(e.target.value); setError('') }}
+            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
+          />
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#C96442] hover:bg-[#B85839] disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-all shadow-lg shadow-[#C96442]/20"
+          >
+            {loading ? 'Saving…' : 'Save my report'}
+          </button>
+        </form>
+
+        <p className="text-[11px] text-[#B8A99A] text-center mt-3">
+          Already have an account?{' '}
+          <a href="/auth" className="underline hover:text-[#78716C] transition-colors">Sign in</a>
+        </p>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ResultsPage() {
@@ -553,6 +634,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true)
   const [coachingLoading, setCoachingLoading] = useState(false)
   const [coachingError, setCoachingError] = useState<string | null>(null)
+  const [isSignedIn, setIsSignedIn] = useState(false)
 
   useEffect(() => {
     const id = params.id as string
@@ -563,6 +645,11 @@ export default function ResultsPage() {
     }
     setSession(s)
     setLoading(false)
+
+    // Check auth state for save banner
+    supabase.auth.getSession().then(({ data: { session: authSession } }) => {
+      setIsSignedIn(!!authSession)
+    })
   }, [params.id, router])
 
   const fetchCoaching = useCallback(async (s: Session) => {
@@ -728,6 +815,13 @@ export default function ResultsPage() {
           <div className="text-center py-12">
             <p className="text-zinc-500 text-sm mb-4">This session uses an older format.</p>
             <Link href="/dashboard" className="text-indigo-600 text-sm">Back to sessions</Link>
+          </div>
+        )}
+
+        {/* Save progress banner — only for unauthenticated users after coaching loads */}
+        {!isSignedIn && c && !coachingLoading && (
+          <div className="fade-in-2">
+            <SaveProgressBanner session={session} />
           </div>
         )}
 

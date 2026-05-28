@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { saveProfile, saveProfileToSupabase, hasProfile } from '@/lib/profile'
-import { supabase } from '@/lib/supabase'
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 
@@ -112,12 +111,9 @@ export default function SetupPage() {
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Auth guard + profile check
+  // Redirect if profile already exists
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) { router.replace('/auth'); return }
-      if (hasProfile()) router.replace('/new')
-    })
+    if (hasProfile()) router.replace('/new')
   }, [router])
 
   // Re-infer level when role changes (unless user manually overrode)
