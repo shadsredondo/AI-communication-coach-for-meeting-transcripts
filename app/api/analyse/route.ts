@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { SYSTEM_PROMPT } from '@/lib/system-prompt'
-import type { Participant } from '@/types'
+import type { Participant, DeterministicAnalysis } from '@/types'
 import type { UserProfile } from '@/lib/profile'
 
 export const maxDuration = 60
@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
       meetingTitle,
       participants,
       profile,
+      deterministicAnalysis,
     }: {
       transcript: string
       userGoal: string
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
       meetingTitle: string
       participants: Participant[]
       profile: UserProfile | null
+      deterministicAnalysis?: DeterministicAnalysis
     } = body
 
     if (!transcript?.trim()) {
@@ -67,7 +69,11 @@ export async function POST(request: NextRequest) {
         ].filter(Boolean).join('\n')
       : `Role: ${userTitle}\nSeniority: ${userSeniority}`
 
-    const userMessage = `## Meeting transcript
+    const deterministicSection = deterministicAnalysis
+      ? `## Step 1 Observational Analysis\n${JSON.stringify(deterministicAnalysis, null, 2)}\n\n`
+      : ''
+
+    const userMessage = `${deterministicSection}## Meeting transcript
 ${transcript}
 
 ## Meeting context

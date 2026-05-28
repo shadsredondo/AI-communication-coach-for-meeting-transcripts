@@ -2,6 +2,53 @@ export type GoalScore = 'red' | 'yellow' | 'green'
 export type Importance = 'high' | 'medium' | 'low'
 export type TranscriptFormat = 'zoom' | 'raw'
 export type Confidence = 'high' | 'medium' | 'low'
+export type ContributionLevel = 'dominant' | 'active' | 'moderate' | 'minimal'
+export type WatchPattern = 'over_explanation' | 'interruption' | 'hesitation' | 'defensiveness' | 'filler_language'
+export type MomentType = 'topic_shift' | 'decision' | 'question' | 'agreement' | 'tension' | 'clarification'
+
+// Step 1: Deterministic / Observational Agent output
+export interface DeterministicAnalysis {
+  meeting_type: {
+    inferred: string
+    confidence: Confidence
+  }
+  meeting_goal: {
+    inferred: string
+    confidence: Confidence
+  }
+  participation: Array<{
+    speaker: string
+    contribution_level: ContributionLevel
+    asked_questions: boolean
+    drove_decisions: boolean
+    notable_behaviors: string[]
+  }>
+  key_moments: Array<{
+    description: string
+    type: MomentType
+    transcript_excerpt: string
+    confidence: Confidence
+  }>
+  user_signals: {
+    clear_moments: Array<{
+      observation: string
+      transcript_excerpt: string
+    }>
+    watch_moments: Array<{
+      pattern: WatchPattern
+      observation: string
+      transcript_excerpt: string
+      confidence: Confidence
+    }>
+  }
+  conversation_shifts: Array<{
+    from_topic: string
+    to_topic: string
+    triggered_by: string
+    transcript_excerpt: string
+  }>
+  insufficient_evidence: string[]
+}
 
 export interface Participant {
   id: string
@@ -66,7 +113,8 @@ export interface Session {
   meetingTitle: string
   participants: Participant[]
   meetingAnalysis?: MeetingAnalysis
-  coachingOutput: CoachingOutput
+  deterministicAnalysis?: DeterministicAnalysis
+  coachingOutput?: CoachingOutput
   goalScore: GoalScore
 }
 

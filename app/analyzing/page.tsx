@@ -5,16 +5,15 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Check, ArrowLeft } from 'lucide-react'
 import { getDraft, saveSession, clearDraft } from '@/lib/storage'
-import { getProfile } from '@/lib/profile'
 import { generateId } from '@/lib/utils'
-import type { CoachingOutput } from '@/types'
+import type { DeterministicAnalysis } from '@/types'
 
 const STEPS = [
-  { label: 'Identifying speakers', duration: 800 },
-  { label: 'Detecting tone shifts', duration: 1000 },
-  { label: 'Mapping stakeholder dynamics', duration: 1200 },
-  { label: 'Finding missed opportunities', duration: 900 },
-  { label: 'Preparing your coaching', duration: 700 },
+  { label: 'Parsing transcript', duration: 700 },
+  { label: 'Identifying participants', duration: 900 },
+  { label: 'Extracting meeting signals', duration: 1100 },
+  { label: 'Mapping your communication patterns', duration: 1000 },
+  { label: 'Building your report', duration: 600 },
 ]
 
 export default function AnalyzingPage() {
@@ -33,21 +32,20 @@ export default function AnalyzingPage() {
     const safeDraft = draft
     let stepsFinished = false
     let apiFinished = false
-    let coachingResult: CoachingOutput | null = null
+    let deterministicResult: DeterministicAnalysis | null = null
     let apiError: string | null = null
 
     function tryComplete() {
       if (!stepsFinished || !apiFinished) return
-      if (apiError || !coachingResult) {
+      if (apiError || !deterministicResult) {
         setError(apiError || 'Something went wrong — please try again.')
         return
       }
 
-      const outcomeToScore = { strong: 'green', partial: 'yellow', off_track: 'red' } as const
-      const goalScore = outcomeToScore[coachingResult.goal_outcome as keyof typeof outcomeToScore] ?? 'yellow'
+      const sessionId = generateId()
 
       const session = {
-        id: generateId(),
+        id: sessionId,
         createdAt: new Date().toISOString(),
         transcript: safeDraft.transcript,
         transcriptFormat: safeDraft.transcriptFormat,
@@ -57,16 +55,16 @@ export default function AnalyzingPage() {
         userSeniority: '',
         meetingTitle: 'Meeting',
         participants: safeDraft.participants,
-        coachingOutput: coachingResult,
-        goalScore,
+        deterministicAnalysis: deterministicResult,
+        goalScore: 'yellow' as const, // placeholder until Step 2 sets the real score
       }
 
       saveSession(session)
       clearDraft()
-      router.push(`/results/${session.id}`)
+      router.push(`/results/${sessionId}`)
     }
 
-    // Fake steps animation
+    // Animated steps (cosmetic — runs in parallel with real API call)
     let stepIndex = 0
     function runNextStep() {
       if (stepIndex >= STEPS.length) {
@@ -86,20 +84,16 @@ export default function AnalyzingPage() {
     }
     runNextStep()
 
-    // Real API call in parallel
-    fetch('/api/analyse', {
+    // Step 1: Deterministic Agent
+    fetch('/api/analyse/step1', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         transcript: draft.transcript,
-        transcriptFormat: draft.transcriptFormat,
         userGoal: draft.userGoal,
         userTitle: draft.userTitle,
-        userSeniority: '',
-        userFunction: '',
         meetingTitle: 'Meeting',
         participants: draft.participants,
-        profile: getProfile(),
       }),
     })
       .then(async res => {
@@ -107,7 +101,7 @@ export default function AnalyzingPage() {
         if (!res.ok) {
           apiError = data.error || 'Analysis failed — please try again.'
         } else {
-          coachingResult = data
+          deterministicResult = data
         }
         apiFinished = true
         tryComplete()
@@ -152,7 +146,7 @@ export default function AnalyzingPage() {
 
           <h1 className="text-2xl font-semibold text-white mb-2 fade-in">Reading the room…</h1>
           <p className="text-sm text-gray-500 mb-10 fade-in-1">
-            Analyzing your conversation
+            Extracting what actually happened
           </p>
 
           <div className="text-left space-y-3">
