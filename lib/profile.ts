@@ -6,6 +6,7 @@ export interface UserProfile {
   seniority: string
   companyName: string
   companySize: string
+  workEnvironment: string
   communicationChallenge: string
   goal: string
 }
