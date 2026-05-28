@@ -8,10 +8,12 @@ export const maxDuration = 60
 const client = new Anthropic()
 
 function extractJSON(text: string): string {
-  const start = text.indexOf('{')
-  const end = text.lastIndexOf('}')
-  if (start === -1 || end === -1) throw new Error(`No JSON object found. Raw: ${text.slice(0, 300)}`)
-  return text.slice(start, end + 1)
+  // Strip markdown code fences if present
+  const stripped = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+  const start = stripped.indexOf('{')
+  const end = stripped.lastIndexOf('}')
+  if (start === -1 || end === -1) throw new Error(`No JSON object found. Raw: ${text.slice(0, 500)}`)
+  return stripped.slice(start, end + 1)
 }
 
 export async function POST(request: NextRequest) {
@@ -60,7 +62,7 @@ ${participantList}`
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
+      max_tokens: 4096,
       system: DETERMINISTIC_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     })
