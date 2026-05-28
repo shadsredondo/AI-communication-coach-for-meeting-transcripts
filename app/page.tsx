@@ -71,7 +71,7 @@ export default function LandingPage() {
 
         {/* Eyebrow */}
         <div className="inline-flex items-center gap-2 rounded-full border border-[#C96442]/30 bg-[#C96442]/8 px-4 py-1.5 text-xs text-[#C96442] font-medium mb-10 fade-in">
-          Your private communication coach
+          Your private communication coach · Built for Zoom, Teams &amp; beyond
         </div>
 
         {/* Heading */}
@@ -83,9 +83,9 @@ export default function LandingPage() {
 
         {/* Subhead */}
         <p className="text-lg text-[#78716C] max-w-xl leading-relaxed mb-4 fade-in-2">
-          After every important workplace conversation, Signal helps you understand
-          what really happened, how you came across, and what to say differently
-          next time.
+          After every important Zoom call, stakeholder meeting, or leadership
+          review, your communication coach helps you understand what really
+          happened, how you came across, and what to say differently next time.
         </p>
         <p className="text-base text-[#78716C] max-w-md leading-relaxed mb-12 fade-in-2">
           So you can build influence, earn trust, and grow.
