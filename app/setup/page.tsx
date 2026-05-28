@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { saveProfile, hasProfile } from '@/lib/profile'
+import { saveProfile, saveProfileToSupabase, hasProfile } from '@/lib/profile'
+import { supabase } from '@/lib/supabase'
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 
@@ -111,9 +112,12 @@ export default function SetupPage() {
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Redirect if profile already exists
+  // Auth guard + profile check
   useEffect(() => {
-    if (hasProfile()) router.replace('/new')
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) { router.replace('/auth'); return }
+      if (hasProfile()) router.replace('/new')
+    })
   }, [router])
 
   // Re-infer level when role changes (unless user manually overrode)
@@ -168,11 +172,11 @@ export default function SetupPage() {
     setErrors({})
   }
 
-  function handleFinish() {
+  async function handleFinish() {
     const e = validateStep2()
     if (Object.keys(e).length > 0) { setErrors(e); return }
 
-    saveProfile({
+    const profile = {
       name: '',
       role: role.trim(),
       seniority: selectedLevel,
@@ -181,7 +185,10 @@ export default function SetupPage() {
       workEnvironment: workEnv,
       communicationChallenge: challenges.join(', '),
       goal,
-    })
+    }
+
+    saveProfile(profile)
+    await saveProfileToSupabase(profile)
 
     router.push('/new')
   }

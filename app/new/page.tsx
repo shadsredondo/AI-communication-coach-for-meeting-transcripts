@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Plus, X } from 'lucide-react'
 import { saveDraft } from '@/lib/storage'
 import { hasProfile, getProfile } from '@/lib/profile'
+import { supabase } from '@/lib/supabase'
 import { parseTranscript, extractRolesFromTranscript } from '@/lib/transcript-parser'
 import { lookupRole } from '@/lib/stakeholders'
 import { ROLE_GROUPS, getAllRoles, addCustomRole } from '@/lib/default-roles'
@@ -163,15 +164,14 @@ export default function NewMeetingPage() {
   const [userTitle, setUserTitle] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Redirect to setup if no profile
+  // Auth guard + profile check
   useEffect(() => {
-    if (!hasProfile()) {
-      router.replace('/setup')
-      return
-    }
-    // Pre-fill title from profile
-    const profile = getProfile()
-    if (profile?.role) setUserTitle(profile.role)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) { router.replace('/auth'); return }
+      if (!hasProfile()) { router.replace('/setup'); return }
+      const profile = getProfile()
+      if (profile?.role) setUserTitle(profile.role)
+    })
   }, [router])
 
   // Auto-detect participants from transcript
