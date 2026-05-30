@@ -162,7 +162,6 @@ export default function NewMeetingPage() {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([])
   const [userTitle, setUserTitle] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [ready, setReady] = useState(false)
 
   // Redirect to setup if no profile
   useEffect(() => {
@@ -172,11 +171,7 @@ export default function NewMeetingPage() {
     }
     const profile = getProfile()
     if (profile?.role) setUserTitle(profile.role)
-    setReady(true)
   }, [router])
-
-  // Don't render anything until profile check is done (prevents flash)
-  if (!ready) return null
 
   // Auto-detect participants from transcript
   useEffect(() => {
