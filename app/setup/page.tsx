@@ -291,6 +291,7 @@ export default function SetupPage() {
               </div>
 
               <button
+                type="button"
                 onClick={handleNext}
                 className="w-full inline-flex items-center justify-center gap-2 bg-[#C96442] hover:bg-[#B85839] text-white font-medium px-6 py-3.5 rounded-xl transition-all duration-150 text-sm shadow-lg shadow-[#C96442]/20"
               >
@@ -352,12 +353,14 @@ export default function SetupPage() {
 
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => { setStep(1); setErrors({}) }}
                   className="px-5 py-3.5 text-sm font-medium text-[#78716C] hover:text-[#1C1510] border border-[#E8DFD3] rounded-xl transition-colors bg-white"
                 >
                   Back
                 </button>
                 <button
+                  type="button"
                   onClick={handleFinish}
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-[#C96442] hover:bg-[#B85839] text-white font-medium px-6 py-3.5 rounded-xl transition-all duration-150 text-sm shadow-lg shadow-[#C96442]/20"
                 >
