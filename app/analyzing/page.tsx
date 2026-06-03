@@ -24,10 +24,7 @@ export default function AnalyzingPage() {
 
   useEffect(() => {
     const draft = getDraft()
-    if (!draft) {
-      router.replace('/new')
-      return
-    }
+    if (!draft) { router.replace('/new'); return }
 
     const safeDraft = draft
     let stepsFinished = false
@@ -41,9 +38,7 @@ export default function AnalyzingPage() {
         setError(apiError || 'Something went wrong — please try again.')
         return
       }
-
       const sessionId = generateId()
-
       const session = {
         id: sessionId,
         createdAt: new Date().toISOString(),
@@ -56,35 +51,28 @@ export default function AnalyzingPage() {
         meetingTitle: 'Meeting',
         participants: safeDraft.participants,
         deterministicAnalysis: deterministicResult,
-        goalScore: 'yellow' as const, // placeholder until Step 2 sets the real score
+        goalScore: 'yellow' as const,
       }
-
       saveSession(session)
       clearDraft()
       router.push(`/results/${sessionId}`)
     }
 
-    // Animated steps (cosmetic — runs in parallel with real API call)
     let stepIndex = 0
     function runNextStep() {
       if (stepIndex >= STEPS.length) {
-        setTimeout(() => {
-          stepsFinished = true
-          tryComplete()
-        }, 400)
+        setTimeout(() => { stepsFinished = true; tryComplete() }, 400)
         return
       }
       setCurrentStep(stepIndex)
-      const duration = STEPS[stepIndex].duration
       setTimeout(() => {
         setCompletedSteps(prev => [...prev, stepIndex])
         stepIndex++
         setTimeout(runNextStep, 150)
-      }, duration)
+      }, STEPS[stepIndex].duration)
     }
     runNextStep()
 
-    // Step 1: Deterministic Agent
     fetch('/api/analyse/step1', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -98,11 +86,8 @@ export default function AnalyzingPage() {
     })
       .then(async res => {
         const data = await res.json()
-        if (!res.ok) {
-          apiError = data.error || 'Analysis failed — please try again.'
-        } else {
-          deterministicResult = data
-        }
+        if (!res.ok) { apiError = data.error || 'Analysis failed — please try again.' }
+        else { deterministicResult = data }
         apiFinished = true
         tryComplete()
       })
@@ -115,9 +100,9 @@ export default function AnalyzingPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#06060f] flex flex-col items-center justify-center px-6">
-        <p className="text-red-400 text-sm mb-6 text-center max-w-sm">{error}</p>
-        <Link href="/new" className="text-sm text-gray-400 hover:text-white transition-colors">
+      <div className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center px-6">
+        <p className="text-red-500 text-sm mb-6 text-center max-w-sm">{error}</p>
+        <Link href="/new" className="text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
           ← Go back and try again
         </Link>
       </div>
@@ -125,27 +110,32 @@ export default function AnalyzingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#06060f] flex flex-col px-6">
-      <nav className="py-4 max-w-sm mx-auto w-full">
-        <Link href="/new" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition-colors">
-          <ArrowLeft size={16} />
+    <div className="min-h-screen bg-[#FAF7F2] flex flex-col px-6">
+      <nav className="py-5 max-w-sm mx-auto w-full">
+        <Link
+          href="/new"
+          className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors"
+        >
+          <ArrowLeft size={15} />
           Back
         </Link>
       </nav>
 
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-sm w-full text-center">
+
+          {/* Pulse icon */}
           <div className="flex justify-center mb-10">
-            <div className="relative w-16 h-16">
-              <div className="absolute inset-0 rounded-full bg-indigo-600/20 animate-ping" />
-              <div className="relative w-16 h-16 rounded-full bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center">
-                <div className="w-6 h-6 rounded-full bg-indigo-500 animate-pulse" />
+            <div className="relative w-14 h-14">
+              <div className="absolute inset-0 rounded-full bg-[#C96442]/15 animate-ping" />
+              <div className="relative w-14 h-14 rounded-full bg-[#C96442]/10 border border-[#C96442]/30 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-[#C96442] animate-pulse" />
               </div>
             </div>
           </div>
 
-          <h1 className="text-2xl font-semibold text-white mb-2 fade-in">Reading the room…</h1>
-          <p className="text-sm text-gray-500 mb-10 fade-in-1">
+          <h1 className="text-xl font-semibold text-[#1C1510] mb-2">Reading the room…</h1>
+          <p className="text-sm text-[#78716C] mb-10">
             Extracting what actually happened
           </p>
 
@@ -161,25 +151,19 @@ export default function AnalyzingPage() {
                     i > currentStep && !isDone ? 'opacity-30' : 'opacity-100'
                   }`}
                 >
-                  <div
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                      isDone
-                        ? 'bg-indigo-600 border-indigo-600'
-                        : isActive
-                        ? 'border-indigo-500 bg-transparent'
-                        : 'border-gray-700 bg-transparent'
-                    }`}
-                  >
-                    {isDone && <Check size={11} className="text-white" strokeWidth={3} />}
-                    {isActive && (
-                      <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                    )}
+                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                    isDone
+                      ? 'bg-[#C96442] border-[#C96442]'
+                      : isActive
+                      ? 'border-[#C96442] bg-transparent'
+                      : 'border-[#E8DFD3] bg-transparent'
+                  }`}>
+                    {isDone && <Check size={10} className="text-white" strokeWidth={3} />}
+                    {isActive && <div className="w-2 h-2 rounded-full bg-[#C96442] animate-pulse" />}
                   </div>
-                  <span
-                    className={`text-sm transition-colors duration-300 ${
-                      isDone ? 'text-gray-400' : isActive ? 'text-white' : 'text-gray-600'
-                    }`}
-                  >
+                  <span className={`text-sm transition-colors duration-300 ${
+                    isDone ? 'text-[#B8A99A]' : isActive ? 'text-[#1C1510]' : 'text-[#E8DFD3]'
+                  }`}>
                     {step.label}
                   </span>
                 </div>
