@@ -470,6 +470,8 @@ export default function ResultsPage() {
 
           {/* ── Right: concrete actions + say it stronger (sticky) ── */}
           <div className="space-y-3 lg:sticky lg:top-[73px] lg:self-start">
+            {/* Invisible spacer matches the "YOUR COACHING" label height on the left */}
+            <div className="h-[20px] hidden lg:block" />
 
             {/* Concrete actions */}
             {coachingLoading && (
