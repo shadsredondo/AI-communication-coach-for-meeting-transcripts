@@ -3,63 +3,20 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import {
-  ArrowLeft, ArrowRight, Target, MessageSquare, Mic, FileText,
-  ChevronDown, ChevronUp, Check, AlertTriangle
-} from 'lucide-react'
+import { ArrowLeft, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
 import { getSession, saveSession, saveSessionToSupabase } from '@/lib/storage'
 import { getProfile, saveProfileToSupabase } from '@/lib/profile'
 import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
-import type {
-  Session, GoalScore, CoachingSection, DeterministicAnalysis,
-  ContributionLevel, WatchPattern, CoachingOutput
-} from '@/types'
+import type { Session, GoalScore, CoachingSection, CoachingOutput } from '@/types'
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const CONTRIBUTION_ROLE: Record<ContributionLevel, string> = {
-  dominant: 'Led the meeting',
-  active:   'Active voice',
-  moderate: 'Contributing',
-  minimal:  'Listening',
-}
-
-const WATCH_PATTERN_LABELS: Record<WatchPattern, string> = {
-  over_explanation: 'Over-explanation',
-  interruption:     'Interruption',
-  hesitation:       'Hesitation',
-  defensiveness:    'Defensiveness',
-  filler_language:  'Filler language',
-}
-
-const MOMENT_TYPE_STYLE: Record<string, string> = {
-  topic_shift:   'bg-[#F0EBE3] text-[#78716C] border-[#E8DFD3]',
-  decision:      'bg-emerald-50 text-emerald-700 border-emerald-200',
-  question:      'bg-blue-50 text-blue-700 border-blue-200',
-  agreement:     'bg-teal-50 text-teal-700 border-teal-200',
-  tension:       'bg-red-50 text-red-700 border-red-200',
-  clarification: 'bg-amber-50 text-amber-700 border-amber-200',
-}
-
-const MOMENT_TYPE_LABEL: Record<string, string> = {
-  topic_shift:   'Shift',
-  decision:      'Decision',
-  question:      'Question',
-  agreement:     'Agreement',
-  tension:       'Tension',
-  clarification: 'Clarification',
-}
-
-// ─── 60-second summary ────────────────────────────────────────────────────────
+// ─── Summary card ──────────────────────────────────────────────────────────────
 
 function SummaryCard({
   coaching,
-  analysis,
   loading,
 }: {
   coaching: CoachingOutput | undefined
-  analysis: DeterministicAnalysis | undefined
   loading: boolean
 }) {
   if (loading) {
@@ -68,10 +25,9 @@ function SummaryCard({
         <div className="h-2.5 bg-white/10 rounded-full w-24 mb-5" />
         <div className="h-5 bg-white/10 rounded-full w-3/4 mb-2" />
         <div className="h-5 bg-white/10 rounded-full w-1/2 mb-8" />
-        <div className="h-2.5 bg-white/10 rounded-full w-full mb-2.5" />
-        <div className="h-2.5 bg-white/10 rounded-full w-4/5 mb-8" />
-        <div className="h-2.5 bg-white/10 rounded-full w-2/3 mb-2.5" />
-        <div className="h-2.5 bg-white/10 rounded-full w-3/4" />
+        <div className="h-2.5 bg-white/10 rounded-full w-20 mb-3" />
+        <div className="h-3 bg-white/10 rounded-full w-full mb-2" />
+        <div className="h-3 bg-white/10 rounded-full w-4/5" />
       </div>
     )
   }
@@ -79,20 +35,14 @@ function SummaryCard({
   if (!coaching) return null
 
   const { overall_summary, goal_outcome } = coaching
-
   const outcomeConfig = {
     strong:    { label: 'Strong outcome',  dot: 'bg-emerald-400', text: 'text-emerald-400' },
     partial:   { label: 'Partial outcome', dot: 'bg-amber-400',   text: 'text-amber-400' },
     off_track: { label: 'Off track',       dot: 'bg-red-400',     text: 'text-red-400' },
   }[goal_outcome] ?? { label: 'Partial outcome', dot: 'bg-amber-400', text: 'text-amber-400' }
 
-  const topClear = analysis?.user_signals.clear_moments[0]
-  const topWatch = analysis?.user_signals.watch_moments[0]
-
   return (
     <div className="bg-[#1C1510] rounded-2xl p-7 text-white">
-
-      {/* Outcome */}
       <div className="flex items-center gap-2 mb-4">
         <span className={`w-2 h-2 rounded-full flex-shrink-0 ${outcomeConfig.dot}`} />
         <span className={`text-xs font-semibold uppercase tracking-widest ${outcomeConfig.text}`}>
@@ -100,30 +50,10 @@ function SummaryCard({
         </span>
       </div>
 
-      {/* Headline */}
       <p className="text-[17px] font-semibold leading-snug text-white mb-7">
         {overall_summary.headline}
       </p>
 
-      {/* Top observations */}
-      {(topClear || topWatch) && (
-        <div className="space-y-3 mb-7">
-          {topClear && (
-            <div className="flex items-start gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-[7px] flex-shrink-0" />
-              <p className="text-sm text-white/75 leading-snug">{topClear.observation}</p>
-            </div>
-          )}
-          {topWatch && (
-            <div className="flex items-start gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-[7px] flex-shrink-0" />
-              <p className="text-sm text-white/75 leading-snug">{topWatch.observation}</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Top 2 next moves */}
       {overall_summary.next_moves.length > 0 && (
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-white/35 mb-3">
@@ -145,339 +75,175 @@ function SummaryCard({
   )
 }
 
-// ─── How you showed up ────────────────────────────────────────────────────────
+// ─── Coaching section ──────────────────────────────────────────────────────────
 
-function HowYouShowedUp({ analysis }: { analysis: DeterministicAnalysis }) {
-  const { clear_moments, watch_moments } = analysis.user_signals
-  if (clear_moments.length === 0 && watch_moments.length === 0) return null
-
+function CoachingLoadingState() {
   return (
-    <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
-      <div className="px-6 py-4 border-b border-[#E8DFD3]">
-        <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest">
-          How you showed up
-        </p>
+    <div className="space-y-3 animate-pulse">
+      <div className="bg-white rounded-2xl border border-[#E8DFD3] p-6">
+        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-28 mb-5" />
+        <div className="space-y-2.5">
+          <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
+          <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5" />
+          <div className="h-3 bg-[#F0EBE3] rounded-full w-3/4" />
+        </div>
       </div>
-
-      <div className="divide-y divide-[#E8DFD3]">
-        {clear_moments.length > 0 && (
-          <div className="px-6 py-5">
-            <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-widest mb-3">
-              What landed
-            </p>
-            <div className="space-y-3">
-              {clear_moments.map((m, i) => (
-                <div key={i} className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-                  <p className="text-sm font-semibold text-[#1C1510] leading-snug">{m.observation}</p>
-                  {m.transcript_excerpt && (
-                    <p className="text-xs text-[#78716C] italic mt-2 leading-relaxed">
-                      "{m.transcript_excerpt}"
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {watch_moments.length > 0 && (
-          <div className="px-6 py-5">
-            <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-widest mb-3">
-              Watch moments
-            </p>
-            <div className="space-y-3">
-              {watch_moments.map((m, i) => (
-                <div key={i} className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 border border-amber-200 rounded-full px-2.5 py-0.5 uppercase tracking-wider">
-                      {WATCH_PATTERN_LABELS[m.pattern]}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-[#1C1510] leading-snug">{m.observation}</p>
-                  {m.transcript_excerpt && (
-                    <p className="text-xs text-[#78716C] italic mt-2 leading-relaxed">
-                      "{m.transcript_excerpt}"
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+      <div className="bg-white rounded-2xl border border-[#E8DFD3] p-6">
+        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-32 mb-5" />
+        <div className="space-y-2.5">
+          <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
+          <div className="h-3 bg-[#F0EBE3] rounded-full w-3/5" />
+          <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5" />
+        </div>
       </div>
     </div>
   )
 }
 
-// ─── The room ─────────────────────────────────────────────────────────────────
-
-function TheRoom({ analysis }: { analysis: DeterministicAnalysis }) {
-  const [momentsOpen, setMomentsOpen] = useState(false)
-
-  return (
-    <div className="space-y-2">
-
-      {/* Participants */}
-      <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#E8DFD3]">
-          <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest">
-            Who drove the room
-          </p>
-        </div>
-        <div className="divide-y divide-[#E8DFD3]">
-          {analysis.participation.map((p, i) => (
-            <div key={i} className="px-6 py-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-[#1C1510]">{p.speaker}</p>
-                <div className="flex items-center gap-2">
-                  {p.drove_decisions && (
-                    <span className="text-[10px] font-semibold text-[#C96442] bg-[#C96442]/10 border border-[#C96442]/20 rounded-full px-2.5 py-0.5">
-                      Drove decisions
-                    </span>
-                  )}
-                  <span className="text-[11px] text-[#B8A99A]">
-                    {CONTRIBUTION_ROLE[p.contribution_level]}
-                  </span>
-                </div>
-              </div>
-              {p.notable_behaviors.length > 0 && (
-                <ul className="space-y-1.5">
-                  {p.notable_behaviors.map((b, j) => (
-                    <li key={j} className="flex items-start gap-2 text-sm text-[#78716C] leading-snug">
-                      <span className="text-[#C96442]/50 flex-shrink-0 mt-1">·</span>
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Key moments — collapsed by default */}
-      {analysis.key_moments.length > 0 && (
-        <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
-          <button
-            className="w-full text-left px-6 py-4 flex items-center justify-between hover:bg-[#FAF7F2] transition-colors"
-            onClick={() => setMomentsOpen(!momentsOpen)}
-          >
-            <div className="flex items-center gap-2">
-              <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest">
-                Key dynamics
-              </p>
-              <span className="text-[10px] text-[#B8A99A] border border-[#E8DFD3] rounded-full px-2 py-0.5">
-                {analysis.key_moments.length}
-              </span>
-            </div>
-            {momentsOpen
-              ? <ChevronUp size={14} className="text-[#B8A99A]" />
-              : <ChevronDown size={14} className="text-[#B8A99A]" />}
-          </button>
-
-          {momentsOpen && (
-            <div className="border-t border-[#E8DFD3] px-6 py-5 space-y-4">
-              {analysis.key_moments.map((m, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#F0EBE3] flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-bold text-[#78716C]">
-                    {i + 1}
-                  </div>
-                  <div className="flex-1">
-                    <span className={`inline-flex text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full border mb-2 ${MOMENT_TYPE_STYLE[m.type] ?? 'bg-[#F0EBE3] text-[#78716C] border-[#E8DFD3]'}`}>
-                      {MOMENT_TYPE_LABEL[m.type] ?? m.type}
-                    </span>
-                    <p className="text-sm text-[#1C1510] leading-snug">{m.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Deep coaching ────────────────────────────────────────────────────────────
-
-function CoachingCard({
-  section,
-  icon: Icon,
-  title,
-}: {
-  section: CoachingSection
-  icon: React.ElementType
-  title: string
+function StrengthCard({ summary, sections }: {
+  summary: string[]
+  sections: CoachingSection[]
 }) {
   const [open, setOpen] = useState(false)
+  const allDetail = sections.flatMap(s => s.what_went_well)
 
   return (
     <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
-      <button
-        className="w-full text-left px-6 py-5 hover:bg-[#FAF7F2] transition-colors"
-        onClick={() => setOpen(!open)}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 flex-1 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-[#C96442]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Icon size={14} className="text-[#C96442]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">{title}</p>
-              <p className="text-sm font-semibold text-[#1C1510] leading-snug pr-4">{section.one_line_summary}</p>
-            </div>
-          </div>
-          <div className="flex-shrink-0 mt-1">
-            {open
-              ? <ChevronUp size={15} className="text-[#B8A99A]" />
-              : <ChevronDown size={15} className="text-[#B8A99A]" />}
-          </div>
-        </div>
-      </button>
+      <div className="px-6 py-5">
+        <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-widest mb-4">
+          What you did well
+        </p>
+        <ul className="space-y-3">
+          {summary.map((item, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 mt-[7px]" />
+              <p className="text-sm text-[#1C1510] leading-snug">{item}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      {open && (
-        <div className="border-t border-[#E8DFD3] px-6 py-6 space-y-6">
-          {section.what_went_well.length > 0 && (
-            <div>
-              <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-widest mb-3">
-                What went well
-              </p>
-              <div className="space-y-2.5">
-                {section.what_went_well.map((item, i) => (
-                  <div key={i} className="rounded-xl bg-emerald-50 border border-emerald-100 p-4">
-                    <p className="text-sm font-semibold text-[#1C1510] mb-2 leading-snug">{item.point}</p>
-                    <p className="text-xs text-[#78716C] italic leading-relaxed">"{item.evidence}"</p>
-                  </div>
-                ))}
-              </div>
+      {allDetail.length > 0 && (
+        <>
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            className="w-full flex items-center gap-2 px-6 py-3 border-t border-[#F0EBE3] text-xs text-[#78716C] hover:text-[#1C1510] hover:bg-[#FAF7F2] transition-colors"
+          >
+            {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            {open ? 'Hide detailed notes' : 'See detailed notes'}
+          </button>
+
+          {open && (
+            <div className="border-t border-[#E8DFD3] px-6 py-5 space-y-3 bg-[#FAF7F2]">
+              {allDetail.map((item, i) => (
+                <div key={i} className="bg-white border border-emerald-100 rounded-xl p-4">
+                  <p className="text-sm font-medium text-[#1C1510] leading-snug mb-2">{item.point}</p>
+                  <p className="text-xs text-[#78716C] italic leading-relaxed">"{item.evidence}"</p>
+                </div>
+              ))}
             </div>
           )}
-
-          {section.what_could_be_stronger.length > 0 && (
-            <div>
-              <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-widest mb-3">
-                What could be stronger
-              </p>
-              <div className="space-y-2.5">
-                {section.what_could_be_stronger.map((item, i) => (
-                  <div key={i} className="rounded-xl bg-amber-50 border border-amber-100 p-4">
-                    <p className="text-sm font-semibold text-[#1C1510] mb-2 leading-snug">{item.point}</p>
-                    <p className="text-xs text-[#78716C] italic leading-relaxed">"{item.evidence}"</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {section.rewrite_suggestions && section.rewrite_suggestions.length > 0 && (
-            <div>
-              <p className="text-[11px] font-semibold text-[#C96442] uppercase tracking-widest mb-3">
-                Say it stronger
-              </p>
-              <div className="space-y-3">
-                {section.rewrite_suggestions.map((r, i) => (
-                  <div key={i} className="rounded-xl border border-[#E8DFD3] overflow-hidden">
-                    <div className="grid grid-cols-2 divide-x divide-[#E8DFD3]">
-                      <div className="p-4">
-                        <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">
-                          What you said
-                        </p>
-                        <p className="text-sm text-[#78716C] italic leading-relaxed">"{r.original}"</p>
-                      </div>
-                      <div className="p-4 bg-[#FAF7F2]">
-                        <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">
-                          Stronger version
-                        </p>
-                        <p className="text-sm text-[#1C1510] font-medium leading-relaxed">"{r.rewrite}"</p>
-                      </div>
-                    </div>
-                    <div className="px-4 py-2.5 bg-[#C96442]/8 border-t border-[#C96442]/15">
-                      <p className="text-xs text-[#C96442] leading-relaxed">{r.why}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   )
 }
 
-function NextStepsCard({ steps }: { steps: Array<{ action: string; timing: string }> }) {
+function ImprovementCard({ summary, sections }: {
+  summary: string[]
+  sections: CoachingSection[]
+}) {
   const [open, setOpen] = useState(false)
+  const allDetail = sections.flatMap(s => s.what_could_be_stronger)
+
+  if (summary.length === 0 && allDetail.length === 0) return null
+
+  return (
+    <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
+      <div className="px-6 py-5">
+        <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-widest mb-4">
+          What to strengthen
+        </p>
+        <ul className="space-y-3">
+          {summary.map((item, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 mt-[7px]" />
+              <p className="text-sm text-[#1C1510] leading-snug">{item}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {allDetail.length > 0 && (
+        <>
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            className="w-full flex items-center gap-2 px-6 py-3 border-t border-[#F0EBE3] text-xs text-[#78716C] hover:text-[#1C1510] hover:bg-[#FAF7F2] transition-colors"
+          >
+            {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            {open ? 'Hide detailed notes' : 'See detailed notes'}
+          </button>
+
+          {open && (
+            <div className="border-t border-[#E8DFD3] px-6 py-5 space-y-3 bg-[#FAF7F2]">
+              {allDetail.map((item, i) => (
+                <div key={i} className="bg-white border border-amber-100 rounded-xl p-4">
+                  <p className="text-sm font-medium text-[#1C1510] leading-snug mb-2">{item.point}</p>
+                  <p className="text-xs text-[#78716C] italic leading-relaxed">"{item.evidence}"</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+function RewritesCard({ sections }: { sections: CoachingSection[] }) {
+  const [open, setOpen] = useState(false)
+  const rewrites = sections.flatMap(s => s.rewrite_suggestions ?? [])
+  if (rewrites.length === 0) return null
 
   return (
     <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
       <button
-        className="w-full text-left px-6 py-5 hover:bg-[#FAF7F2] transition-colors"
+        type="button"
         onClick={() => setOpen(!open)}
+        className="w-full text-left px-6 py-5 flex items-center justify-between hover:bg-[#FAF7F2] transition-colors"
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 flex-1">
-            <div className="w-8 h-8 rounded-lg bg-[#C96442]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <MessageSquare size={14} className="text-[#C96442]" />
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">
-                Before your next meeting
-              </p>
-              <p className="text-sm font-semibold text-[#1C1510]">
-                {steps.length} specific action{steps.length !== 1 ? 's' : ''} to take
-              </p>
-            </div>
-          </div>
-          {open
-            ? <ChevronUp size={15} className="text-[#B8A99A] mt-1" />
-            : <ChevronDown size={15} className="text-[#B8A99A] mt-1" />}
+        <div>
+          <p className="text-[11px] font-semibold text-[#C96442] uppercase tracking-widest mb-1">
+            Say it stronger
+          </p>
+          <p className="text-sm text-[#78716C]">{rewrites.length} rewrite suggestion{rewrites.length !== 1 ? 's' : ''}</p>
         </div>
+        {open ? <ChevronUp size={15} className="text-[#B8A99A]" /> : <ChevronDown size={15} className="text-[#B8A99A]" />}
       </button>
 
       {open && (
-        <div className="border-t border-[#E8DFD3] px-6 py-6 space-y-3">
-          {steps.map((step, i) => (
-            <div key={i} className="flex items-start gap-4 bg-[#FAF7F2] border border-[#E8DFD3] rounded-xl p-4">
-              <div className="w-6 h-6 rounded-full bg-[#C96442] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                {i + 1}
-              </div>
-              <div>
-                <p className="text-sm text-[#1C1510] leading-relaxed mb-1.5">{step.action}</p>
-                <div className="flex items-center gap-1.5">
-                  <ArrowRight size={10} className="text-[#C96442]" />
-                  <p className="text-xs text-[#C96442] font-semibold">{step.timing}</p>
+        <div className="border-t border-[#E8DFD3] px-6 py-5 space-y-3">
+          {rewrites.map((r, i) => (
+            <div key={i} className="rounded-xl border border-[#E8DFD3] overflow-hidden">
+              <div className="grid grid-cols-2 divide-x divide-[#E8DFD3]">
+                <div className="p-4">
+                  <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">What you said</p>
+                  <p className="text-sm text-[#78716C] italic leading-relaxed">"{r.original}"</p>
                 </div>
+                <div className="p-4 bg-[#FAF7F2]">
+                  <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">Stronger version</p>
+                  <p className="text-sm text-[#1C1510] font-medium leading-relaxed">"{r.rewrite}"</p>
+                </div>
+              </div>
+              <div className="px-4 py-2.5 bg-[#C96442]/8 border-t border-[#C96442]/15">
+                <p className="text-xs text-[#C96442] leading-relaxed">{r.why}</p>
               </div>
             </div>
           ))}
         </div>
       )}
-    </div>
-  )
-}
-
-const SECTION_CONFIG = {
-  strategic_communication: { title: 'Strategic Communication', icon: Target },
-  tone_and_presence:       { title: 'Tone & Presence',         icon: Mic },
-  clarity:                 { title: 'Clarity',                 icon: FileText },
-} as const
-
-// ─── Coaching skeleton ─────────────────────────────────────────────────────────
-
-function CoachingSkeleton() {
-  return (
-    <div className="space-y-2 animate-pulse">
-      {[1, 2, 3].map(i => (
-        <div key={i} className="bg-white rounded-2xl border border-[#E8DFD3] p-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[#F0EBE3]" />
-            <div className="space-y-2 flex-1">
-              <div className="h-2 bg-[#F0EBE3] rounded-full w-20" />
-              <div className="h-3 bg-[#F0EBE3] rounded-full w-3/4" />
-            </div>
-          </div>
-        </div>
-      ))}
     </div>
   )
 }
@@ -497,14 +263,11 @@ function SaveProgressBanner({ session }: { session: Session }) {
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
     setLoading(true)
     setError('')
-
     const { error: signUpError } = await supabase.auth.signUp({ email, password })
     if (signUpError) { setError(signUpError.message); setLoading(false); return }
-
     await saveSessionToSupabase(session)
     const profile = getProfile()
     if (profile) await saveProfileToSupabase(profile)
-
     setSaved(true)
   }
 
@@ -512,9 +275,7 @@ function SaveProgressBanner({ session }: { session: Session }) {
     return (
       <div className="bg-[#F0EBE3] border border-[#E8DFD3] rounded-2xl px-6 py-5 text-center">
         <p className="text-sm font-semibold text-[#1C1510] mb-1">You're all set ✓</p>
-        <p className="text-xs text-[#78716C]">
-          Your report is saved. Sign in anytime to pick up where you left off.
-        </p>
+        <p className="text-xs text-[#78716C]">Your report is saved. Sign in anytime to pick up where you left off.</p>
       </div>
     )
   }
@@ -522,33 +283,20 @@ function SaveProgressBanner({ session }: { session: Session }) {
   return (
     <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl overflow-hidden">
       <div className="px-6 pt-6 pb-5">
-        <p className="text-base font-semibold text-[#1C1510] mb-1">
-          Keep this report. Track how you improve.
-        </p>
+        <p className="text-base font-semibold text-[#1C1510] mb-1">Keep this report. Track how you improve.</p>
         <p className="text-sm text-[#78716C] mb-5 leading-relaxed">
           Create a free account and every coaching report you generate will be saved — so you can see your growth over time.
         </p>
         <form onSubmit={handleSave} className="space-y-3">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
+          <input type="email" placeholder="Email" value={email}
             onChange={e => { setEmail(e.target.value); setError('') }}
-            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
-          />
-          <input
-            type="password"
-            placeholder="Password (6+ characters)"
-            value={password}
+            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
+          <input type="password" placeholder="Password (6+ characters)" value={password}
             onChange={e => { setPassword(e.target.value); setError('') }}
-            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
-          />
+            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
           {error && <p className="text-xs text-red-500">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#C96442] hover:bg-[#B85839] disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-all shadow-lg shadow-[#C96442]/20"
-          >
+          <button type="submit" disabled={loading}
+            className="w-full bg-[#C96442] hover:bg-[#B85839] disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-all shadow-lg shadow-[#C96442]/20">
             {loading ? 'Saving…' : 'Save my report'}
           </button>
         </form>
@@ -558,16 +306,6 @@ function SaveProgressBanner({ session }: { session: Session }) {
         </p>
       </div>
     </div>
-  )
-}
-
-// ─── Section label ─────────────────────────────────────────────────────────────
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest pt-2 pb-1 px-1">
-      {children}
-    </p>
   )
 }
 
@@ -588,7 +326,6 @@ export default function ResultsPage() {
     if (!s) { router.replace('/dashboard'); return }
     setSession(s)
     setLoading(false)
-
     supabase.auth.getSession().then(({ data: { session: authSession } }) => {
       setIsSignedIn(!!authSession)
     })
@@ -597,7 +334,6 @@ export default function ResultsPage() {
   const fetchCoaching = useCallback(async (s: Session) => {
     setCoachingLoading(true)
     setCoachingError(null)
-
     try {
       const res = await fetch('/api/analyse', {
         method: 'POST',
@@ -613,14 +349,12 @@ export default function ResultsPage() {
           deterministicAnalysis: s.deterministicAnalysis,
         }),
       })
-
       const data = await res.json()
       if (!res.ok) {
         setCoachingError(data.error || 'Coaching failed — please try again.')
         setCoachingLoading(false)
         return
       }
-
       const coaching: CoachingOutput = data
       const outcomeToScore = { strong: 'green', partial: 'yellow', off_track: 'red' } as const
       const goalScore = outcomeToScore[coaching.goal_outcome as keyof typeof outcomeToScore] ?? 'yellow'
@@ -648,7 +382,6 @@ export default function ResultsPage() {
   }
 
   const c = session.coachingOutput
-  const d = session.deterministicAnalysis
 
   return (
     <div className="min-h-screen bg-[#FAF7F2]">
@@ -656,10 +389,7 @@ export default function ResultsPage() {
       {/* Nav */}
       <nav className="bg-[#FAF7F2] border-b border-[#E8DFD3] px-6 py-4 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors"
-          >
+          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
             <ArrowLeft size={15} />
             All sessions
           </Link>
@@ -668,75 +398,81 @@ export default function ResultsPage() {
         </div>
       </nav>
 
-      <main className="max-w-2xl mx-auto px-6 py-8 space-y-2">
+      <main className="max-w-2xl mx-auto px-6 py-8 space-y-3">
 
         {/* Meeting context */}
-        <div className="px-1 pb-2">
+        <div className="px-1 pb-1">
           <h1 className="text-lg font-semibold text-[#1C1510] leading-snug">
             {session.meetingTitle || 'Coaching report'}
           </h1>
           <p className="text-sm text-[#78716C] mt-0.5">Goal: {session.userGoal}</p>
         </div>
 
-        {/* 60-second summary */}
-        <SummaryCard
-          coaching={c}
-          analysis={d}
-          loading={coachingLoading}
-        />
+        {/* Summary card */}
+        <SummaryCard coaching={c} loading={coachingLoading} />
 
         {coachingError && (
           <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
             <p className="text-sm text-red-600 mb-3">{coachingError}</p>
-            <button
-              onClick={() => session && fetchCoaching(session)}
-              className="text-xs font-semibold text-red-600 hover:text-red-800 underline"
-            >
+            <button type="button" onClick={() => fetchCoaching(session)}
+              className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
               Try again
             </button>
           </div>
         )}
 
-        {/* How you showed up */}
-        {d && (
-          <>
-            <SectionLabel>How you showed up</SectionLabel>
-            <HowYouShowedUp analysis={d} />
-          </>
-        )}
+        {/* Your coaching */}
+        <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest px-1 pt-2">
+          Your coaching
+        </p>
 
-        {/* The room */}
-        {d && d.participation.length > 0 && (
-          <>
-            <SectionLabel>The room</SectionLabel>
-            <TheRoom analysis={d} />
-          </>
-        )}
+        {coachingLoading && <CoachingLoadingState />}
 
-        {/* Deep coaching */}
-        {(coachingLoading || c) && (
+        {c && (
           <>
-            <SectionLabel>Deep coaching</SectionLabel>
-            {coachingLoading && <CoachingSkeleton />}
-            {c && (
-              <div className="space-y-2">
-                {c.sections.map((section) => {
-                  const config = SECTION_CONFIG[section.id]
-                  if (!config) return null
-                  return (
-                    <CoachingCard key={section.id} section={section} icon={config.icon} title={config.title} />
-                  )
-                })}
-                {c.next_steps && c.next_steps.length > 0 && (
-                  <NextStepsCard steps={c.next_steps} />
-                )}
+            <StrengthCard
+              summary={c.overall_summary.what_landed}
+              sections={c.sections}
+            />
+            <ImprovementCard
+              summary={c.overall_summary.what_to_work_on ?? []}
+              sections={c.sections}
+            />
+            <RewritesCard sections={c.sections} />
+
+            {/* Next steps */}
+            {c.next_steps && c.next_steps.length > 0 && (
+              <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl px-6 py-5">
+                <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-4">
+                  Concrete actions
+                </p>
+                <div className="space-y-3">
+                  {c.next_steps.map((step, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span className="w-5 h-5 rounded-full bg-[#C96442] flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 mt-0.5 leading-none">
+                        {i + 1}
+                      </span>
+                      <div>
+                        <p className="text-sm text-[#1C1510] leading-snug">{step.action}</p>
+                        <p className="text-xs text-[#C96442] font-medium mt-1">{step.timing}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </>
         )}
 
-        {/* Insufficient evidence */}
-        {d && d.insufficient_evidence.length > 0 && (
+        {/* Save banner */}
+        {!isSignedIn && c && !coachingLoading && (
+          <div className="pt-2">
+            <SaveProgressBanner session={session} />
+          </div>
+        )}
+
+        {/* Insufficient evidence note */}
+        {(session.deterministicAnalysis?.insufficient_evidence ?? []).length > 0 && (
           <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl px-6 py-4">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle size={12} className="text-[#B8A99A]" />
@@ -745,20 +481,13 @@ export default function ResultsPage() {
               </p>
             </div>
             <ul className="space-y-1.5">
-              {d.insufficient_evidence.map((item, i) => (
+              {(session.deterministicAnalysis?.insufficient_evidence ?? []).map((item, i) => (
                 <li key={i} className="text-xs text-[#78716C] leading-relaxed flex items-start gap-2">
                   <span className="text-[#E8DFD3] flex-shrink-0 mt-0.5">·</span>
                   {item}
                 </li>
               ))}
             </ul>
-          </div>
-        )}
-
-        {/* Save progress banner */}
-        {!isSignedIn && c && !coachingLoading && (
-          <div className="pt-4">
-            <SaveProgressBanner session={session} />
           </div>
         )}
 

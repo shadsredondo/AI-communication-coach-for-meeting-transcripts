@@ -131,6 +131,7 @@ export interface CoachingOutput {
   overall_summary: {
     headline: string
     what_landed: string[]
+    what_to_work_on?: string[]
     next_moves: string[]
   }
   sections: CoachingSection[]

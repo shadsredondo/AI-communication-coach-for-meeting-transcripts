@@ -37,6 +37,10 @@ If you cannot reach at least medium confidence, omit the item and add it to insu
 
 The participant marked (YOU) is the user. user_signals must focus exclusively on this person.
 
+In user_signals observations, always refer to the user as "you" or "your" — never by name.
+- CORRECT: "You continued explaining after the question was answered."
+- WRONG: "Shradha continued explaining after the question was answered."
+
 ---
 
 ## watch_moments — only flag when the pattern is clearly observable
