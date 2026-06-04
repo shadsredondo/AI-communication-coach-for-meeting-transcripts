@@ -21,7 +21,7 @@ function SummaryCard({
 }) {
   if (loading) {
     return (
-      <div className="bg-[#1C1510] rounded-2xl p-7 animate-pulse">
+      <div className="bg-[#2D1A0E] rounded-2xl p-7 animate-pulse">
         <div className="h-2.5 bg-white/10 rounded-full w-24 mb-5" />
         <div className="h-5 bg-white/10 rounded-full w-3/4 mb-2" />
         <div className="h-5 bg-white/10 rounded-full w-1/2 mb-8" />
@@ -42,7 +42,7 @@ function SummaryCard({
   }[goal_outcome] ?? { label: 'Partial outcome', dot: 'bg-amber-400', text: 'text-amber-400' }
 
   return (
-    <div className="bg-[#1C1510] rounded-2xl p-7 text-white">
+    <div className="bg-[#2D1A0E] rounded-2xl p-7 text-white">
       <div className="flex items-center gap-2 mb-4">
         <span className={`w-2 h-2 rounded-full flex-shrink-0 ${outcomeConfig.dot}`} />
         <span className={`text-xs font-semibold uppercase tracking-widest ${outcomeConfig.text}`}>
@@ -408,28 +408,30 @@ export default function ResultsPage() {
           <p className="text-sm text-[#78716C] mt-0.5">Goal: {session.userGoal}</p>
         </div>
 
+        {/* Summary card — full width */}
+        <div className="mb-6">
+          <SummaryCard coaching={c} loading={coachingLoading} />
+          {coachingError && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 mt-3">
+              <p className="text-sm text-red-600 mb-3">{coachingError}</p>
+              <button type="button" onClick={() => fetchCoaching(session)}
+                className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+                Try again
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Two-column grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
 
-          {/* ── Left: coaching content ── */}
+          {/* ── Left: what you did well + what to strengthen ── */}
           <div className="space-y-3">
-
-            {/* Your coaching label */}
             <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest px-1">
               Your coaching
             </p>
 
             {coachingLoading && <CoachingLoadingState />}
-
-            {coachingError && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
-                <p className="text-sm text-red-600 mb-3">{coachingError}</p>
-                <button type="button" onClick={() => fetchCoaching(session)}
-                  className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
-                  Try again
-                </button>
-              </div>
-            )}
 
             {c && (
               <>
@@ -441,7 +443,6 @@ export default function ResultsPage() {
                   summary={c.overall_summary.what_to_work_on ?? []}
                   sections={c.sections}
                 />
-                <RewritesCard sections={c.sections} />
               </>
             )}
 
@@ -467,12 +468,19 @@ export default function ResultsPage() {
 
           </div>{/* end left column */}
 
-          {/* ── Right: summary + actions (sticky) ── */}
+          {/* ── Right: concrete actions + say it stronger (sticky) ── */}
           <div className="space-y-3 lg:sticky lg:top-[73px] lg:self-start">
 
-            <SummaryCard coaching={c} loading={coachingLoading} />
-
             {/* Concrete actions */}
+            {coachingLoading && (
+              <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 animate-pulse space-y-3">
+                <div className="h-2.5 bg-[#F0EBE3] rounded-full w-28" />
+                <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
+                <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5" />
+                <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
+              </div>
+            )}
+
             {c?.next_steps && c.next_steps.length > 0 && (
               <div className="bg-white border border-[#E8DFD3] rounded-2xl px-5 py-5">
                 <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-4">
@@ -493,6 +501,9 @@ export default function ResultsPage() {
                 </div>
               </div>
             )}
+
+            {/* Say it stronger */}
+            {c && <RewritesCard sections={c.sections} />}
 
             {/* Save banner */}
             {!isSignedIn && c && !coachingLoading && (
