@@ -388,7 +388,7 @@ export default function ResultsPage() {
 
       {/* Nav */}
       <nav className="bg-[#FAF7F2] border-b border-[#E8DFD3] px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
             <ArrowLeft size={15} />
             All sessions
@@ -398,51 +398,83 @@ export default function ResultsPage() {
         </div>
       </nav>
 
-      <main className="max-w-2xl mx-auto px-6 py-8 space-y-3">
+      <main className="max-w-5xl mx-auto px-6 py-8">
 
-        {/* Meeting context */}
-        <div className="px-1 pb-1">
+        {/* Meeting context — full width */}
+        <div className="mb-6">
           <h1 className="text-lg font-semibold text-[#1C1510] leading-snug">
             {session.meetingTitle || 'Coaching report'}
           </h1>
           <p className="text-sm text-[#78716C] mt-0.5">Goal: {session.userGoal}</p>
         </div>
 
-        {/* Summary card */}
-        <SummaryCard coaching={c} loading={coachingLoading} />
+        {/* Two-column grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
 
-        {coachingError && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
-            <p className="text-sm text-red-600 mb-3">{coachingError}</p>
-            <button type="button" onClick={() => fetchCoaching(session)}
-              className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
-              Try again
-            </button>
-          </div>
-        )}
+          {/* ── Left: coaching content ── */}
+          <div className="space-y-3">
 
-        {/* Your coaching */}
-        <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest px-1 pt-2">
-          Your coaching
-        </p>
+            {/* Your coaching label */}
+            <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest px-1">
+              Your coaching
+            </p>
 
-        {coachingLoading && <CoachingLoadingState />}
+            {coachingLoading && <CoachingLoadingState />}
 
-        {c && (
-          <>
-            <StrengthCard
-              summary={c.overall_summary.what_landed}
-              sections={c.sections}
-            />
-            <ImprovementCard
-              summary={c.overall_summary.what_to_work_on ?? []}
-              sections={c.sections}
-            />
-            <RewritesCard sections={c.sections} />
+            {coachingError && (
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
+                <p className="text-sm text-red-600 mb-3">{coachingError}</p>
+                <button type="button" onClick={() => fetchCoaching(session)}
+                  className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+                  Try again
+                </button>
+              </div>
+            )}
 
-            {/* Next steps */}
-            {c.next_steps && c.next_steps.length > 0 && (
-              <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl px-6 py-5">
+            {c && (
+              <>
+                <StrengthCard
+                  summary={c.overall_summary.what_landed}
+                  sections={c.sections}
+                />
+                <ImprovementCard
+                  summary={c.overall_summary.what_to_work_on ?? []}
+                  sections={c.sections}
+                />
+                <RewritesCard sections={c.sections} />
+              </>
+            )}
+
+            {/* Insufficient evidence — bottom of left col */}
+            {(session.deterministicAnalysis?.insufficient_evidence ?? []).length > 0 && (
+              <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl px-6 py-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertTriangle size={12} className="text-[#B8A99A]" />
+                  <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest">
+                    What we couldn't determine
+                  </p>
+                </div>
+                <ul className="space-y-1.5">
+                  {(session.deterministicAnalysis?.insufficient_evidence ?? []).map((item, i) => (
+                    <li key={i} className="text-xs text-[#78716C] leading-relaxed flex items-start gap-2">
+                      <span className="text-[#E8DFD3] flex-shrink-0 mt-0.5">·</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+          </div>{/* end left column */}
+
+          {/* ── Right: summary + actions (sticky) ── */}
+          <div className="space-y-3 lg:sticky lg:top-[73px] lg:self-start">
+
+            <SummaryCard coaching={c} loading={coachingLoading} />
+
+            {/* Concrete actions */}
+            {c?.next_steps && c.next_steps.length > 0 && (
+              <div className="bg-white border border-[#E8DFD3] rounded-2xl px-5 py-5">
                 <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-4">
                   Concrete actions
                 </p>
@@ -461,35 +493,15 @@ export default function ResultsPage() {
                 </div>
               </div>
             )}
-          </>
-        )}
 
-        {/* Save banner */}
-        {!isSignedIn && c && !coachingLoading && (
-          <div className="pt-2">
-            <SaveProgressBanner session={session} />
-          </div>
-        )}
+            {/* Save banner */}
+            {!isSignedIn && c && !coachingLoading && (
+              <SaveProgressBanner session={session} />
+            )}
 
-        {/* Insufficient evidence note */}
-        {(session.deterministicAnalysis?.insufficient_evidence ?? []).length > 0 && (
-          <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl px-6 py-4">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle size={12} className="text-[#B8A99A]" />
-              <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest">
-                What we couldn't determine
-              </p>
-            </div>
-            <ul className="space-y-1.5">
-              {(session.deterministicAnalysis?.insufficient_evidence ?? []).map((item, i) => (
-                <li key={i} className="text-xs text-[#78716C] leading-relaxed flex items-start gap-2">
-                  <span className="text-[#E8DFD3] flex-shrink-0 mt-0.5">·</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+          </div>{/* end right column */}
+
+        </div>{/* end grid */}
 
         <div className="h-10" />
       </main>
