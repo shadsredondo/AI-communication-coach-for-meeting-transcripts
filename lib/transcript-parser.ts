@@ -69,9 +69,35 @@ export function extractSpeakers(text: string, format: TranscriptFormat): string[
       }
     }
 
-    // Also handle plain-text Zoom exports: "Name (HH:MM:SS): text"
+    // Plain-text Zoom exports: "Name (HH:MM:SS): text"
     const plainZoomPattern = /^([A-Z][^(:\n]{1,40})\s*\(\d{1,2}:\d{2}(?::\d{2})?\):/gm
     while ((match = plainZoomPattern.exec(text)) !== null) {
+      const name = match[1].trim()
+      if (name.length > 1 && !isNonSpeaker(name)) {
+        speakers.add(name)
+      }
+    }
+
+    // Markdown bold: "**Name:**" or "**Name (Role):**" (Notion, formatted docs)
+    // Capture everything between ** **, then strip role in parens and trailing colon
+    const markdownPattern = /^\*\*([^*\n]+)\*\*:?\s+\S/gm
+    while ((match = markdownPattern.exec(text)) !== null) {
+      const name = match[1]
+        .replace(/:$/, '')                // strip trailing colon first
+        .replace(/\s*\([^)]*\)\s*$/, '') // then strip "(Role)" suffix
+        .trim()
+      if (name.length > 1 && /^[A-Z]/.test(name) && !isNonSpeaker(name)) {
+        speakers.add(name)
+      }
+    }
+  }
+
+  // Bullet-list participant header (any format): "- Name (Role)" or "* Name (Role)"
+  // Only extract when a role is present — strong signal this is a participant list
+  {
+    const bulletPattern = /^[-*•]\s+([A-Z][^(\n]{1,40}?)\s*\([^)\d\n]{3,60}\)\s*$/gm
+    let match
+    while ((match = bulletPattern.exec(text)) !== null) {
       const name = match[1].trim()
       if (name.length > 1 && !isNonSpeaker(name)) {
         speakers.add(name)
@@ -84,16 +110,28 @@ export function extractSpeakers(text: string, format: TranscriptFormat): string[
 
 export function extractRolesFromTranscript(text: string): Map<string, string> {
   const roles = new Map<string, string>()
-  // Matches "Name (Role): text" — role must be non-numeric and ≤6 words
-  const pattern = /^([A-Z][^(:\n]{1,40})\s*\(([^)\d]{3,60})\):/gm
+
+  // Pattern 1: "Name (Role): text" in dialogue lines
+  const dialoguePattern = /^([A-Z][^(:\n]{1,40})\s*\(([^)\d]{3,60})\):/gm
   let match
-  while ((match = pattern.exec(text)) !== null) {
+  while ((match = dialoguePattern.exec(text)) !== null) {
     const name = match[1].trim()
     const role = match[2].trim()
     if (role.split(/\s+/).length <= 6 && !isNonSpeaker(name)) {
       roles.set(name, role)
     }
   }
+
+  // Pattern 2: bullet-list header "- Name (Role)" or "* Name (Role)"
+  const bulletPattern = /^[-*•]\s+([A-Z][^(\n]{1,40}?)\s*\(([^)\d\n]{3,60})\)\s*$/gm
+  while ((match = bulletPattern.exec(text)) !== null) {
+    const name = match[1].trim()
+    const role = match[2].trim()
+    if (role.split(/\s+/).length <= 6 && !isNonSpeaker(name)) {
+      roles.set(name, role)
+    }
+  }
+
   return roles
 }
 

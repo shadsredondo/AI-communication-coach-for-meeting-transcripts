@@ -58,6 +58,10 @@ export async function POST(request: NextRequest) {
       ...otherParticipants.map(p => `- ${p.name}${p.role ? ` — ${p.role}` : ''}`),
     ].filter(Boolean).join('\n')
 
+    const hypothesesSection = profile?.growth_hypotheses?.length
+      ? `\n\n## Growth hypotheses\nAreas of focus based on this user's stated goal. Treat as priorities when transcript evidence exists — not as facts.\n${profile.growth_hypotheses.map(h => `- ${h.label}: ${h.rationale}`).join('\n')}`
+      : ''
+
     const profileSection = profile
       ? [
           `Name: ${profile.name}`,
@@ -66,7 +70,7 @@ export async function POST(request: NextRequest) {
           profile.companyName ? `Company: ${profile.companyName}${profile.companySize ? ` (${profile.companySize})` : ''}` : null,
           profile.communicationChallenge ? `Communication challenge: ${profile.communicationChallenge}` : null,
           profile.goal ? `Career goal: ${profile.goal}` : null,
-        ].filter(Boolean).join('\n')
+        ].filter(Boolean).join('\n') + hypothesesSection
       : `Role: ${userTitle}\nSeniority: ${userSeniority}`
 
     const deterministicSection = deterministicAnalysis
