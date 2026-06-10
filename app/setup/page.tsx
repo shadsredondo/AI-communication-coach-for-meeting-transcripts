@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { saveProfile, saveProfileToSupabase, hasProfile } from '@/lib/profile'
+import { getHypothesesForGoal } from '@/lib/growth-hypotheses'
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 
@@ -181,6 +182,7 @@ export default function SetupPage() {
       workEnvironment: workEnv,
       communicationChallenge: challenges.join(', '),
       goal,
+      growth_hypotheses: getHypothesesForGoal(goal),
     }
 
     saveProfile(profile)

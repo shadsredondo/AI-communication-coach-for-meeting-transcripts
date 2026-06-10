@@ -1,4 +1,7 @@
 import { supabase } from '@/lib/supabase'
+import type { GrowthHypothesis } from '@/lib/growth-hypotheses'
+
+export type { GrowthHypothesis }
 
 const PROFILE_KEY = 'signal_user_profile'
 
@@ -11,6 +14,7 @@ export interface UserProfile {
   workEnvironment: string
   communicationChallenge: string
   goal: string
+  growth_hypotheses?: GrowthHypothesis[]
 }
 
 export function getProfile(): UserProfile | null {
@@ -46,6 +50,7 @@ export async function saveProfileToSupabase(profile: UserProfile): Promise<void>
     work_environment: profile.workEnvironment,
     communication_challenge: profile.communicationChallenge,
     goal: profile.goal,
+    growth_hypotheses: profile.growth_hypotheses ?? null,
     updated_at: new Date().toISOString(),
   })
 }
