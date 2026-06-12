@@ -119,25 +119,30 @@ export interface Session {
 
 export interface CoachingOutput {
   goal_outcome: 'strong' | 'partial' | 'off_track'
-  profile_goal_connection: {
-    stated_goal: string
-    assessment: string
-  }
-  core_diagnosis: {
-    label: string
-    explanation: string
+  diagnosis: {
+    headline: string
+    root_cause: string
     hypothesis_tags: string[]
   }
-  professional_coaching: {
-    summary: string
-    what_worked: Array<{ point: string; evidence: string; hypothesis_tag?: string }>
-    what_to_strengthen: Array<{ point: string; evidence: string; hypothesis_tag?: string }>
+  next_move: {
+    action: string
+    why: string
   }
-  communication: {
-    summary: string
-    what_worked: Array<{ point: string; evidence: string }>
-    what_to_strengthen: Array<{ point: string; evidence: string }>
-    rewrite_suggestions?: Array<{ original: string; rewrite: string; why: string }>
+  pattern: {
+    name: string
+    observation: string
   }
-  next_moves: Array<{ move: string; rationale: string }>
+  next_level: {
+    capability: string
+    in_this_meeting: string
+  }
+  evidence: Array<{
+    quote: string
+    reveals: string
+  }>
+  rewrites?: Array<{
+    original: string
+    rewrite: string
+    why: string
+  }>
 }
