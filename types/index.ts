@@ -63,7 +63,6 @@ export interface DraftSession {
   transcriptFormat: TranscriptFormat
   participants: Participant[]
   userTitle: string
-  userGoal: string
 }
 
 // Agent 1: Meeting Analyst output
@@ -106,7 +105,7 @@ export interface Session {
   createdAt: string
   transcript: string
   transcriptFormat: TranscriptFormat
-  userGoal: string
+  userGoal?: string
   userTitle: string
   userFunction: string
   userSeniority: string
@@ -118,22 +117,27 @@ export interface Session {
   goalScore: GoalScore
 }
 
-export interface CoachingSection {
-  id: 'strategic_communication' | 'tone_and_presence' | 'clarity'
-  one_line_summary: string
-  what_went_well: Array<{ point: string; evidence: string }>
-  what_could_be_stronger: Array<{ point: string; evidence: string }>
-  rewrite_suggestions?: Array<{ original: string; rewrite: string; why: string }>
-}
-
 export interface CoachingOutput {
   goal_outcome: 'strong' | 'partial' | 'off_track'
-  overall_summary: {
-    headline: string
-    what_landed: string[]
-    what_to_work_on?: string[]
-    next_moves: string[]
+  profile_goal_connection: {
+    stated_goal: string
+    assessment: string
   }
-  sections: CoachingSection[]
-  next_steps: Array<{ action: string; timing: string }>
+  core_diagnosis: {
+    label: string
+    explanation: string
+    hypothesis_tags: string[]
+  }
+  professional_coaching: {
+    summary: string
+    what_worked: Array<{ point: string; evidence: string; hypothesis_tag?: string }>
+    what_to_strengthen: Array<{ point: string; evidence: string; hypothesis_tag?: string }>
+  }
+  communication: {
+    summary: string
+    what_worked: Array<{ point: string; evidence: string }>
+    what_to_strengthen: Array<{ point: string; evidence: string }>
+    rewrite_suggestions?: Array<{ original: string; rewrite: string; why: string }>
+  }
+  next_moves: Array<{ move: string; rationale: string }>
 }

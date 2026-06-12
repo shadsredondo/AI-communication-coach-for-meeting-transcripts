@@ -8,238 +8,348 @@ import { getSession, saveSession, saveSessionToSupabase } from '@/lib/storage'
 import { getProfile, saveProfileToSupabase } from '@/lib/profile'
 import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
-import type { Session, GoalScore, CoachingSection, CoachingOutput } from '@/types'
+import type { Session, CoachingOutput } from '@/types'
 
-// ─── Summary card ──────────────────────────────────────────────────────────────
+// ─── Outcome config ────────────────────────────────────────────────────────────
 
-function SummaryCard({
-  coaching,
-  loading,
-}: {
-  coaching: CoachingOutput | undefined
-  loading: boolean
-}) {
-  if (loading) {
-    return (
-      <div className="bg-[#2D1A0E] rounded-2xl p-7 animate-pulse">
-        <div className="h-2.5 bg-white/10 rounded-full w-24 mb-5" />
-        <div className="h-5 bg-white/10 rounded-full w-3/4 mb-2" />
-        <div className="h-5 bg-white/10 rounded-full w-1/2 mb-8" />
-        <div className="h-2.5 bg-white/10 rounded-full w-20 mb-3" />
-        <div className="h-3 bg-white/10 rounded-full w-full mb-2" />
-        <div className="h-3 bg-white/10 rounded-full w-4/5" />
-      </div>
-    )
-  }
-
-  if (!coaching) return null
-
-  const { overall_summary, goal_outcome } = coaching
-  const outcomeConfig = {
-    strong:    { label: 'Strong outcome',  dot: 'bg-emerald-400', text: 'text-emerald-400' },
-    partial:   { label: 'Partial outcome', dot: 'bg-amber-400',   text: 'text-amber-400' },
-    off_track: { label: 'Off track',       dot: 'bg-red-400',     text: 'text-red-400' },
-  }[goal_outcome] ?? { label: 'Partial outcome', dot: 'bg-amber-400', text: 'text-amber-400' }
-
+function getOutcomeConfig(outcome: string) {
   return (
-    <div className="bg-[#2D1A0E] rounded-2xl p-7 text-white">
-      <div className="flex items-center gap-2 mb-4">
-        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${outcomeConfig.dot}`} />
-        <span className={`text-xs font-semibold uppercase tracking-widest ${outcomeConfig.text}`}>
-          {outcomeConfig.label}
-        </span>
-      </div>
-
-      <p className="text-[17px] font-semibold leading-snug text-white mb-7">
-        {overall_summary.headline}
-      </p>
-
-      {overall_summary.next_moves.length > 0 && (
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-white/35 mb-3">
-            Before your next meeting
-          </p>
-          <div className="space-y-2.5">
-            {overall_summary.next_moves.slice(0, 2).map((move, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="w-5 h-5 rounded-full bg-[#C96442] flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 mt-0.5 leading-none">
-                  {i + 1}
-                </span>
-                <p className="text-sm text-white/80 leading-snug">{move}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    {
+      strong: {
+        label: 'On track',
+        dot: 'bg-emerald-400',
+        text: 'text-emerald-400',
+        badge: 'bg-emerald-950/40 border-emerald-700/40 text-emerald-400',
+      },
+      partial: {
+        label: 'Partial',
+        dot: 'bg-amber-400',
+        text: 'text-amber-400',
+        badge: 'bg-amber-950/40 border-amber-700/40 text-amber-400',
+      },
+      off_track: {
+        label: 'Off track',
+        dot: 'bg-red-400',
+        text: 'text-red-400',
+        badge: 'bg-red-950/40 border-red-700/40 text-red-400',
+      },
+    }[outcome as 'strong' | 'partial' | 'off_track'] ?? {
+      label: 'Partial',
+      dot: 'bg-amber-400',
+      text: 'text-amber-400',
+      badge: 'bg-amber-950/40 border-amber-700/40 text-amber-400',
+    }
   )
 }
 
-// ─── Coaching section ──────────────────────────────────────────────────────────
+// ─── Loading skeleton ──────────────────────────────────────────────────────────
 
 function CoachingLoadingState() {
   return (
     <div className="space-y-3 animate-pulse">
-      <div className="bg-white rounded-2xl border border-[#E8DFD3] p-6">
-        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-28 mb-5" />
-        <div className="space-y-2.5">
-          <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
-          <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5" />
-          <div className="h-3 bg-[#F0EBE3] rounded-full w-3/4" />
-        </div>
+      <div className="bg-[#2D1A0E] rounded-2xl p-7">
+        <div className="h-2.5 bg-white/10 rounded-full w-40 mb-5" />
+        <div className="h-3 bg-white/10 rounded-full w-3/5 mb-6" />
+        <div className="border-t border-white/10 mb-5" />
+        <div className="h-5 bg-white/10 rounded-full w-4/5 mb-3" />
+        <div className="h-3 bg-white/10 rounded-full w-full mb-2" />
+        <div className="h-3 bg-white/10 rounded-full w-3/4 mb-2" />
+        <div className="h-3 bg-white/10 rounded-full w-4/5" />
       </div>
       <div className="bg-white rounded-2xl border border-[#E8DFD3] p-6">
-        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-32 mb-5" />
-        <div className="space-y-2.5">
-          <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
-          <div className="h-3 bg-[#F0EBE3] rounded-full w-3/5" />
-          <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5" />
-        </div>
+        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-36 mb-4" />
+        <div className="h-3 bg-[#F0EBE3] rounded-full w-full mb-2" />
+        <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5 mb-5" />
+        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-28 mb-4" />
+        <div className="h-3 bg-[#F0EBE3] rounded-full w-full mb-2" />
+        <div className="h-3 bg-[#F0EBE3] rounded-full w-3/4" />
       </div>
     </div>
   )
 }
 
-function StrengthCard({ summary, sections }: {
-  summary: string[]
-  sections: CoachingSection[]
-}) {
-  const [open, setOpen] = useState(false)
-  const allDetail = sections.flatMap(s => s.what_went_well)
+function RightColumnLoadingState() {
+  return (
+    <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 animate-pulse space-y-4">
+      <div className="h-2.5 bg-[#F0EBE3] rounded-full w-24" />
+      {[1, 2, 3].map(i => (
+        <div key={i} className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full bg-[#F0EBE3] flex-shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
+            <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Diagnosis card ────────────────────────────────────────────────────────────
+
+function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
+  const cfg = getOutcomeConfig(coaching.goal_outcome)
+  const { core_diagnosis, profile_goal_connection } = coaching
+
+  return (
+    <div className="bg-[#2D1A0E] rounded-2xl p-7 text-white">
+      {/* Header row: working toward + outcome badge */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <p className="text-[10px] font-semibold text-white/35 uppercase tracking-widest mb-1.5">
+            Working toward
+          </p>
+          <p className="text-sm text-white/55 leading-snug">
+            {profile_goal_connection.stated_goal}
+          </p>
+        </div>
+        <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border flex-shrink-0 ${cfg.badge}`}>
+          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
+          {cfg.label}
+        </span>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-white/10 my-5" />
+
+      {/* Core diagnosis */}
+      <p className="text-[17px] font-semibold text-white leading-snug mb-4">
+        {core_diagnosis.label}
+      </p>
+      <p className="text-sm text-white/65 leading-relaxed mb-5">
+        {core_diagnosis.explanation}
+      </p>
+
+      {/* Goal assessment */}
+      <div className="border-t border-white/10 pt-4">
+        <p className="text-[10px] font-semibold text-white/35 uppercase tracking-widest mb-2">
+          This meeting
+        </p>
+        <p className="text-sm text-white/55 leading-relaxed">
+          {profile_goal_connection.assessment}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Professional coaching card ────────────────────────────────────────────────
+
+function ProfessionalCoachingCard({ coaching }: { coaching: CoachingOutput }) {
+  const { professional_coaching } = coaching
 
   return (
     <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
-      <div className="px-6 py-5">
-        <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-widest mb-4">
-          What you did well
+      <div className="px-6 pt-5 pb-4 border-b border-[#F0EBE3]">
+        <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1.5">
+          Professional coaching
         </p>
-        <ul className="space-y-3">
-          {summary.map((item, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 mt-[7px]" />
-              <p className="text-sm text-[#1C1510] leading-snug">{item}</p>
-            </li>
-          ))}
-        </ul>
+        <p className="text-sm text-[#78716C] leading-snug">
+          {professional_coaching.summary}
+        </p>
       </div>
 
-      {allDetail.length > 0 && (
-        <>
-          <button
-            type="button"
-            onClick={() => setOpen(!open)}
-            className="w-full flex items-center gap-2 px-6 py-3 border-t border-[#F0EBE3] text-xs text-[#78716C] hover:text-[#1C1510] hover:bg-[#FAF7F2] transition-colors"
-          >
-            {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-            {open ? 'Hide detailed notes' : 'See detailed notes'}
-          </button>
+      <div className="px-6 py-5 space-y-6">
+        {professional_coaching.what_worked.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-widest mb-3">
+              What you did well
+            </p>
+            <ul className="space-y-3">
+              {professional_coaching.what_worked.map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 mt-[7px]" />
+                  <p className="text-sm text-[#1C1510] leading-snug">{item.point}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-          {open && (
-            <div className="border-t border-[#E8DFD3] px-6 py-5 space-y-3 bg-[#FAF7F2]">
-              {allDetail.map((item, i) => (
-                <div key={i} className="bg-white border border-emerald-100 rounded-xl p-4">
-                  <p className="text-sm font-medium text-[#1C1510] leading-snug mb-2">{item.point}</p>
-                  <p className="text-xs text-[#78716C] italic leading-relaxed">"{item.evidence}"</p>
+        {professional_coaching.what_to_strengthen.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-widest mb-3">
+              What to strengthen
+            </p>
+            <ul className="space-y-3">
+              {professional_coaching.what_to_strengthen.map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 mt-[7px]" />
+                  <p className="text-sm text-[#1C1510] leading-snug">{item.point}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Communication card ────────────────────────────────────────────────────────
+
+function CommunicationCard({ coaching }: { coaching: CoachingOutput }) {
+  const { communication } = coaching
+  const rewrites = communication.rewrite_suggestions ?? []
+
+  return (
+    <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
+      <div className="px-6 pt-5 pb-4 border-b border-[#F0EBE3]">
+        <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1.5">
+          Communication
+        </p>
+        <p className="text-sm text-[#78716C] leading-snug">{communication.summary}</p>
+      </div>
+
+      <div className="px-6 py-5 space-y-6">
+        {communication.what_worked.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-widest mb-3">
+              What landed
+            </p>
+            <ul className="space-y-3">
+              {communication.what_worked.map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 mt-[7px]" />
+                  <p className="text-sm text-[#1C1510] leading-snug">{item.point}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {communication.what_to_strengthen.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-widest mb-3">
+              What to sharpen
+            </p>
+            <ul className="space-y-3">
+              {communication.what_to_strengthen.map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 mt-[7px]" />
+                  <p className="text-sm text-[#1C1510] leading-snug">{item.point}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {rewrites.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold text-[#C96442] uppercase tracking-widest mb-3">
+              Say it stronger
+            </p>
+            <div className="space-y-3">
+              {rewrites.map((r, i) => (
+                <div key={i} className="rounded-xl border border-[#E8DFD3] overflow-hidden">
+                  <div className="grid grid-cols-2 divide-x divide-[#E8DFD3]">
+                    <div className="p-4">
+                      <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">
+                        What you said
+                      </p>
+                      <p className="text-sm text-[#78716C] italic leading-relaxed">
+                        &ldquo;{r.original}&rdquo;
+                      </p>
+                    </div>
+                    <div className="p-4 bg-[#FAF7F2]">
+                      <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">
+                        Stronger version
+                      </p>
+                      <p className="text-sm text-[#1C1510] font-medium leading-relaxed">
+                        &ldquo;{r.rewrite}&rdquo;
+                      </p>
+                    </div>
+                  </div>
+                  <div className="px-4 py-2.5 bg-[#C96442]/5 border-t border-[#C96442]/10">
+                    <p className="text-xs text-[#C96442] leading-relaxed">{r.why}</p>
+                  </div>
                 </div>
               ))}
             </div>
-          )}
-        </>
-      )}
-    </div>
-  )
-}
-
-function ImprovementCard({ summary, sections }: {
-  summary: string[]
-  sections: CoachingSection[]
-}) {
-  const [open, setOpen] = useState(false)
-  const allDetail = sections.flatMap(s => s.what_could_be_stronger)
-
-  if (summary.length === 0 && allDetail.length === 0) return null
-
-  return (
-    <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
-      <div className="px-6 py-5">
-        <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-widest mb-4">
-          What to strengthen
-        </p>
-        <ul className="space-y-3">
-          {summary.map((item, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 mt-[7px]" />
-              <p className="text-sm text-[#1C1510] leading-snug">{item}</p>
-            </li>
-          ))}
-        </ul>
+          </div>
+        )}
       </div>
-
-      {allDetail.length > 0 && (
-        <>
-          <button
-            type="button"
-            onClick={() => setOpen(!open)}
-            className="w-full flex items-center gap-2 px-6 py-3 border-t border-[#F0EBE3] text-xs text-[#78716C] hover:text-[#1C1510] hover:bg-[#FAF7F2] transition-colors"
-          >
-            {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-            {open ? 'Hide detailed notes' : 'See detailed notes'}
-          </button>
-
-          {open && (
-            <div className="border-t border-[#E8DFD3] px-6 py-5 space-y-3 bg-[#FAF7F2]">
-              {allDetail.map((item, i) => (
-                <div key={i} className="bg-white border border-amber-100 rounded-xl p-4">
-                  <p className="text-sm font-medium text-[#1C1510] leading-snug mb-2">{item.point}</p>
-                  <p className="text-xs text-[#78716C] italic leading-relaxed">"{item.evidence}"</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
     </div>
   )
 }
 
-function RewritesCard({ sections }: { sections: CoachingSection[] }) {
-  const [open, setOpen] = useState(false)
-  const rewrites = sections.flatMap(s => s.rewrite_suggestions ?? [])
-  if (rewrites.length === 0) return null
+// ─── Next moves card ───────────────────────────────────────────────────────────
+
+function NextMovesCard({ coaching }: { coaching: CoachingOutput }) {
+  if (!coaching.next_moves?.length) return null
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E8DFD3] overflow-hidden">
+    <div className="bg-white border border-[#E8DFD3] rounded-2xl px-5 py-5">
+      <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-4">
+        Next moves
+      </p>
+      <div className="space-y-4">
+        {coaching.next_moves.map((item, i) => (
+          <div key={i} className="flex items-start gap-3">
+            <span className="w-5 h-5 rounded-full bg-[#C96442] flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 mt-0.5 leading-none">
+              {i + 1}
+            </span>
+            <div>
+              <p className="text-sm font-medium text-[#1C1510] leading-snug">{item.move}</p>
+              <p className="text-xs text-[#78716C] leading-relaxed mt-1">{item.rationale}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Evidence section (collapsible, bottom of page) ───────────────────────────
+
+function EvidenceSection({ coaching }: { coaching: CoachingOutput }) {
+  const [open, setOpen] = useState(false)
+
+  const items = [
+    ...coaching.professional_coaching.what_worked
+      .filter(i => i.evidence)
+      .map(i => ({ label: i.point, quote: i.evidence })),
+    ...coaching.professional_coaching.what_to_strengthen
+      .filter(i => i.evidence)
+      .map(i => ({ label: i.point, quote: i.evidence })),
+    ...coaching.communication.what_worked
+      .filter(i => i.evidence)
+      .map(i => ({ label: i.point, quote: i.evidence })),
+    ...coaching.communication.what_to_strengthen
+      .filter(i => i.evidence)
+      .map(i => ({ label: i.point, quote: i.evidence })),
+  ]
+
+  if (items.length === 0) return null
+
+  return (
+    <div className="mt-8 border border-[#E8DFD3] rounded-2xl overflow-hidden">
       <button
         type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full text-left px-6 py-5 flex items-center justify-between hover:bg-[#FAF7F2] transition-colors"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between gap-4 px-6 py-4 hover:bg-[#F5F0EA] transition-colors bg-[#FAF7F2]"
       >
-        <div>
-          <p className="text-[11px] font-semibold text-[#C96442] uppercase tracking-widest mb-1">
-            Say it stronger
+        <div className="flex items-center gap-2.5">
+          <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest">
+            Transcript references
           </p>
-          <p className="text-sm text-[#78716C]">{rewrites.length} rewrite suggestion{rewrites.length !== 1 ? 's' : ''}</p>
+          <span className="text-[11px] text-[#B8A99A]">({items.length})</span>
         </div>
-        {open ? <ChevronUp size={15} className="text-[#B8A99A]" /> : <ChevronDown size={15} className="text-[#B8A99A]" />}
+        {open
+          ? <ChevronUp size={14} className="text-[#B8A99A] flex-shrink-0" />
+          : <ChevronDown size={14} className="text-[#B8A99A] flex-shrink-0" />}
       </button>
 
       {open && (
-        <div className="border-t border-[#E8DFD3] px-6 py-5 space-y-3">
-          {rewrites.map((r, i) => (
-            <div key={i} className="rounded-xl border border-[#E8DFD3] overflow-hidden">
-              <div className="grid grid-cols-2 divide-x divide-[#E8DFD3]">
-                <div className="p-4">
-                  <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">What you said</p>
-                  <p className="text-sm text-[#78716C] italic leading-relaxed">"{r.original}"</p>
-                </div>
-                <div className="p-4 bg-[#FAF7F2]">
-                  <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">Stronger version</p>
-                  <p className="text-sm text-[#1C1510] font-medium leading-relaxed">"{r.rewrite}"</p>
-                </div>
-              </div>
-              <div className="px-4 py-2.5 bg-[#C96442]/8 border-t border-[#C96442]/15">
-                <p className="text-xs text-[#C96442] leading-relaxed">{r.why}</p>
-              </div>
+        <div className="px-6 py-5 space-y-3 bg-white">
+          {items.map((item, i) => (
+            <div key={i} className="rounded-xl border border-[#E8DFD3] p-4">
+              <p className="text-[11px] text-[#B8A99A] font-medium mb-2 leading-snug line-clamp-2">
+                {item.label}
+              </p>
+              <p className="text-sm text-[#78716C] italic leading-relaxed">
+                &ldquo;{item.quote}&rdquo;
+              </p>
             </div>
           ))}
         </div>
@@ -274,7 +384,7 @@ function SaveProgressBanner({ session }: { session: Session }) {
   if (saved) {
     return (
       <div className="bg-[#F0EBE3] border border-[#E8DFD3] rounded-2xl px-6 py-5 text-center">
-        <p className="text-sm font-semibold text-[#1C1510] mb-1">You're all set ✓</p>
+        <p className="text-sm font-semibold text-[#1C1510] mb-1">You&rsquo;re all set ✓</p>
         <p className="text-xs text-[#78716C]">Your report is saved. Sign in anytime to pick up where you left off.</p>
       </div>
     )
@@ -288,15 +398,26 @@ function SaveProgressBanner({ session }: { session: Session }) {
           Create a free account and every coaching report you generate will be saved — so you can see your growth over time.
         </p>
         <form onSubmit={handleSave} className="space-y-3">
-          <input type="email" placeholder="Email" value={email}
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
             onChange={e => { setEmail(e.target.value); setError('') }}
-            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
-          <input type="password" placeholder="Password (6+ characters)" value={password}
+            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
+          />
+          <input
+            type="password"
+            placeholder="Password (6+ characters)"
+            value={password}
             onChange={e => { setPassword(e.target.value); setError('') }}
-            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
+            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
+          />
           {error && <p className="text-xs text-red-500">{error}</p>}
-          <button type="submit" disabled={loading}
-            className="w-full bg-[#C96442] hover:bg-[#B85839] disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-all shadow-lg shadow-[#C96442]/20">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#C96442] hover:bg-[#B85839] disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-all shadow-lg shadow-[#C96442]/20"
+          >
             {loading ? 'Saving…' : 'Save my report'}
           </button>
         </form>
@@ -340,7 +461,6 @@ export default function ResultsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           transcript: s.transcript,
-          userGoal: s.userGoal,
           userTitle: s.userTitle,
           userSeniority: s.userSeniority || '',
           meetingTitle: s.meetingTitle,
@@ -368,9 +488,13 @@ export default function ResultsPage() {
     }
   }, [])
 
+  // Fetch if no coaching, or if coaching was generated with the old schema
   useEffect(() => {
-    if (!session || session.coachingOutput) return
-    fetchCoaching(session)
+    if (!session) return
+    const hasNewSchema = session.coachingOutput && 'core_diagnosis' in session.coachingOutput
+    if (!hasNewSchema) {
+      fetchCoaching(session)
+    }
   }, [session, fetchCoaching])
 
   if (loading || !session) {
@@ -381,7 +505,7 @@ export default function ResultsPage() {
     )
   }
 
-  const c = session.coachingOutput
+  const c = session.coachingOutput as CoachingOutput | undefined
 
   return (
     <div className="min-h-screen bg-[#FAF7F2]">
@@ -389,7 +513,10 @@ export default function ResultsPage() {
       {/* Nav */}
       <nav className="bg-[#FAF7F2] border-b border-[#E8DFD3] px-6 py-4 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors"
+          >
             <ArrowLeft size={15} />
             All sessions
           </Link>
@@ -400,22 +527,34 @@ export default function ResultsPage() {
 
       <main className="max-w-5xl mx-auto px-6 py-8">
 
-        {/* Meeting context — full width */}
+        {/* Meeting header */}
         <div className="mb-6">
           <h1 className="text-lg font-semibold text-[#1C1510] leading-snug">
             {session.meetingTitle || 'Coaching report'}
           </h1>
-          <p className="text-sm text-[#78716C] mt-0.5">Goal: {session.userGoal}</p>
         </div>
 
-        {/* Summary card — full width */}
+        {/* Diagnosis card — full width */}
         <div className="mb-6">
-          <SummaryCard coaching={c} loading={coachingLoading} />
+          {coachingLoading && (
+            <div className="bg-[#2D1A0E] rounded-2xl p-7 animate-pulse">
+              <div className="h-2.5 bg-white/10 rounded-full w-40 mb-4" />
+              <div className="h-3 bg-white/10 rounded-full w-3/5 mb-5" />
+              <div className="border-t border-white/10 mb-5" />
+              <div className="h-5 bg-white/10 rounded-full w-4/5 mb-3" />
+              <div className="h-3 bg-white/10 rounded-full w-full mb-2" />
+              <div className="h-3 bg-white/10 rounded-full w-3/4" />
+            </div>
+          )}
+          {c && !coachingLoading && <DiagnosisCard coaching={c} />}
           {coachingError && (
             <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 mt-3">
               <p className="text-sm text-red-600 mb-3">{coachingError}</p>
-              <button type="button" onClick={() => fetchCoaching(session)}
-                className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+              <button
+                type="button"
+                onClick={() => fetchCoaching(session)}
+                className="text-xs font-semibold text-red-600 hover:text-red-800 underline"
+              >
                 Try again
               </button>
             </div>
@@ -425,7 +564,7 @@ export default function ResultsPage() {
         {/* Two-column grid */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
 
-          {/* ── Left: what you did well + what to strengthen ── */}
+          {/* ── Left: professional coaching + communication ── */}
           <div className="space-y-3">
             <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest px-1">
               Your coaching
@@ -433,26 +572,20 @@ export default function ResultsPage() {
 
             {coachingLoading && <CoachingLoadingState />}
 
-            {c && (
+            {c && !coachingLoading && (
               <>
-                <StrengthCard
-                  summary={c.overall_summary.what_landed}
-                  sections={c.sections}
-                />
-                <ImprovementCard
-                  summary={c.overall_summary.what_to_work_on ?? []}
-                  sections={c.sections}
-                />
+                <ProfessionalCoachingCard coaching={c} />
+                <CommunicationCard coaching={c} />
               </>
             )}
 
-            {/* Insufficient evidence — bottom of left col */}
+            {/* What we couldn't determine */}
             {(session.deterministicAnalysis?.insufficient_evidence ?? []).length > 0 && (
               <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl px-6 py-4">
                 <div className="flex items-center gap-2 mb-3">
                   <AlertTriangle size={12} className="text-[#B8A99A]" />
                   <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest">
-                    What we couldn't determine
+                    What we couldn&rsquo;t determine
                   </p>
                 </div>
                 <ul className="space-y-1.5">
@@ -465,56 +598,26 @@ export default function ResultsPage() {
                 </ul>
               </div>
             )}
+          </div>
 
-          </div>{/* end left column */}
-
-          {/* ── Right: concrete actions + say it stronger (sticky) ── */}
+          {/* ── Right: next moves + save banner (sticky) ── */}
           <div className="space-y-3 lg:sticky lg:top-[73px] lg:self-start">
-            {/* Invisible spacer matches the "YOUR COACHING" label height on the left */}
+            {/* Aligns with "YOUR COACHING" label */}
             <div className="h-[20px] hidden lg:block" />
 
-            {/* Concrete actions */}
-            {coachingLoading && (
-              <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 animate-pulse space-y-3">
-                <div className="h-2.5 bg-[#F0EBE3] rounded-full w-28" />
-                <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
-                <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5" />
-                <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
-              </div>
-            )}
+            {coachingLoading && <RightColumnLoadingState />}
 
-            {c?.next_steps && c.next_steps.length > 0 && (
-              <div className="bg-white border border-[#E8DFD3] rounded-2xl px-5 py-5">
-                <p className="text-[11px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-4">
-                  Concrete actions
-                </p>
-                <div className="space-y-3">
-                  {c.next_steps.map((step, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <span className="w-5 h-5 rounded-full bg-[#C96442] flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 mt-0.5 leading-none">
-                        {i + 1}
-                      </span>
-                      <div>
-                        <p className="text-sm text-[#1C1510] leading-snug">{step.action}</p>
-                        <p className="text-xs text-[#C96442] font-medium mt-1">{step.timing}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {c && !coachingLoading && <NextMovesCard coaching={c} />}
 
-            {/* Say it stronger */}
-            {c && <RewritesCard sections={c.sections} />}
-
-            {/* Save banner */}
             {!isSignedIn && c && !coachingLoading && (
               <SaveProgressBanner session={session} />
             )}
-
-          </div>{/* end right column */}
+          </div>
 
         </div>{/* end grid */}
+
+        {/* Evidence — full width, collapsible, at bottom */}
+        {c && !coachingLoading && <EvidenceSection coaching={c} />}
 
         <div className="h-10" />
       </main>

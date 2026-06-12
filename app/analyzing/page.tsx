@@ -44,7 +44,6 @@ export default function AnalyzingPage() {
         createdAt: new Date().toISOString(),
         transcript: safeDraft.transcript,
         transcriptFormat: safeDraft.transcriptFormat,
-        userGoal: safeDraft.userGoal,
         userTitle: safeDraft.userTitle,
         userFunction: '',
         userSeniority: '',
@@ -78,7 +77,6 @@ export default function AnalyzingPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         transcript: draft.transcript,
-        userGoal: draft.userGoal,
         userTitle: draft.userTitle,
         meetingTitle: 'Meeting',
         participants: draft.participants,

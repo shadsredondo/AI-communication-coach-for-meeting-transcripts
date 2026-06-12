@@ -20,7 +20,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       transcript,
-      userGoal,
       userTitle,
       userSeniority,
       meetingTitle,
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
       deterministicAnalysis,
     }: {
       transcript: string
-      userGoal: string
       userTitle: string
       userSeniority: string
       meetingTitle: string
@@ -40,9 +38,6 @@ export async function POST(request: NextRequest) {
 
     if (!transcript?.trim()) {
       return NextResponse.json({ error: 'Transcript is required and cannot be empty' }, { status: 400 })
-    }
-    if (!userGoal?.trim()) {
-      return NextResponse.json({ error: 'Meeting goal is required' }, { status: 400 })
     }
     if (!Array.isArray(participants) || participants.length === 0) {
       return NextResponse.json({ error: 'At least one participant is required' }, { status: 400 })
@@ -82,7 +77,6 @@ ${transcript}
 
 ## Meeting context
 Title: ${meetingTitle}
-Goal: ${userGoal}
 
 ## Participants
 ${participantList}
