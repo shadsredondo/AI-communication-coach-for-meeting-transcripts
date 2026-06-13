@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react'
 import { getSession, saveSession, saveSessionToSupabase } from '@/lib/storage'
 import { getProfile, saveProfileToSupabase } from '@/lib/profile'
+import { getCurrentArchetype, getHeroArchetype } from '@/lib/personas'
 import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import type { Session, CoachingOutput } from '@/types'
@@ -65,8 +66,13 @@ function HeroAvatar() {
 // ─── Persona sidebar ───────────────────────────────────────────────────────────
 
 function PersonaSidebar({ coaching }: { coaching: CoachingOutput }) {
-  const personas = coaching.personas
   const profile = getProfile()
+  const currentArchetype = profile?.communicationChallenge
+    ? getCurrentArchetype(profile.communicationChallenge)
+    : null
+  const heroArchetype = profile?.goal
+    ? getHeroArchetype(profile.goal)
+    : null
 
   return (
     <div className="flex flex-col gap-3">
@@ -100,84 +106,41 @@ function PersonaSidebar({ coaching }: { coaching: CoachingOutput }) {
         </div>
       )}
 
-      {/* Personas */}
-      {personas && (
-        <>
-          {/* Current persona */}
-          <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl overflow-hidden">
-            <div className="px-4 pt-5 pb-4 flex flex-col items-center text-center">
+      {/* Persona cards — side by side */}
+      {(currentArchetype || heroArchetype) && (
+        <div>
+          <div className="grid grid-cols-2 gap-2">
+
+            {/* Current */}
+            <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl px-3 pt-4 pb-4 flex flex-col items-center text-center">
               <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-3">
-                You, right now
+                Current you
               </p>
               <CurrentAvatar />
-              <p className="text-[13px] font-bold text-[#1C1510] leading-snug mt-3 mb-4">
-                {personas.current.archetype}
+              <p className="text-[12px] font-bold text-[#1C1510] leading-snug mt-3">
+                {currentArchetype}
               </p>
-              <div className="w-full text-left space-y-2">
-                {personas.current.traits.map((trait, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#C9B89A] flex-shrink-0 mt-[5px]" />
-                    <p className="text-xs text-[#78716C] leading-snug">{trait}</p>
-                  </div>
-                ))}
-              </div>
             </div>
-          </div>
 
-          {/* Arrow */}
-          <div className="flex items-center justify-center py-1">
-            <svg width="24" height="32" viewBox="0 0 24 32" fill="none">
-              <line x1="12" y1="0" x2="12" y2="24" stroke="#C96442" stroke-width="1.5" stroke-dasharray="3 3" opacity=".5"/>
-              <path d="M6 20 L12 28 L18 20" stroke="#C96442" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>
-            </svg>
-          </div>
-
-          {/* Hero persona */}
-          <div className="bg-[#1C3328] rounded-2xl overflow-hidden">
-            <div className="px-4 pt-5 pb-4 flex flex-col items-center text-center">
+            {/* Hero */}
+            <div className="bg-[#1C3328] rounded-2xl px-3 pt-4 pb-4 flex flex-col items-center text-center">
               <p className="text-[9px] font-semibold text-white/30 uppercase tracking-widest mb-3">
-                Where you're headed
+                Future you
               </p>
               <HeroAvatar />
-              <p className="text-[13px] font-bold text-white leading-snug mt-3 mb-4">
-                {personas.hero.archetype}
+              <p className="text-[12px] font-bold text-white leading-snug mt-3">
+                {heroArchetype}
               </p>
-              <div className="w-full text-left space-y-2">
-                {personas.hero.traits.map((trait, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF85] flex-shrink-0 mt-[5px]" />
-                    <p className="text-xs text-white/60 leading-snug">{trait}</p>
-                  </div>
-                ))}
-              </div>
             </div>
+
           </div>
 
           {/* Bridge */}
-          <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-xl px-4 py-3 text-center">
+          <div className="mt-2 bg-[#FAF7F2] border border-[#E8DFD3] rounded-xl px-4 py-3 text-center">
             <p className="text-xs text-[#78716C] leading-relaxed">
               The coaching on the right is your path from here to there.{' '}
               <span className="font-semibold text-[#C96442]">One meeting at a time.</span>
             </p>
-          </div>
-        </>
-      )}
-
-      {/* Loading skeleton for personas */}
-      {!personas && (
-        <div className="animate-pulse space-y-3">
-          <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl p-4 space-y-3">
-            <div className="w-16 h-16 rounded-full bg-[#E8DFD3] mx-auto" />
-            <div className="h-3 bg-[#E8DFD3] rounded-full w-3/4 mx-auto" />
-            <div className="space-y-2">
-              <div className="h-2.5 bg-[#E8DFD3] rounded-full w-full" />
-              <div className="h-2.5 bg-[#E8DFD3] rounded-full w-5/6" />
-            </div>
-          </div>
-          <div className="h-8" />
-          <div className="bg-[#1C3328]/20 rounded-2xl p-4 space-y-3">
-            <div className="w-16 h-16 rounded-full bg-white/20 mx-auto" />
-            <div className="h-3 bg-white/20 rounded-full w-3/4 mx-auto" />
           </div>
         </div>
       )}
@@ -499,21 +462,7 @@ export default function ResultsPage() {
 
           {/* ── Left: persona sidebar (sticky) ── */}
           <div className="lg:sticky lg:top-[73px] lg:self-start">
-            {c
-              ? <PersonaSidebar coaching={c} />
-              : coachingLoading
-              ? (
-                <div className="animate-pulse space-y-3">
-                  <div className="bg-white border border-[#E8DFD3] rounded-2xl p-4 h-24" />
-                  <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl p-4 h-64" />
-                  <div className="h-8 flex items-center justify-center">
-                    <div className="w-px h-full bg-[#E8DFD3]" />
-                  </div>
-                  <div className="bg-[#1C3328]/15 rounded-2xl p-4 h-64" />
-                </div>
-              )
-              : null
-            }
+            {c && <PersonaSidebar coaching={c} />}
           </div>
 
           {/* ── Right: coaching questions ── */}
