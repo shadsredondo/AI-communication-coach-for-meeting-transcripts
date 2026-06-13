@@ -126,21 +126,17 @@ function PersonaSidebar({ coaching }: { coaching: CoachingOutput }) {
 
 function FutureYouCard({ heroArchetype }: { heroArchetype: string }) {
   return (
-    <div className="bg-[#1C3328] rounded-2xl px-6 py-6 flex items-center gap-6">
-      <div className="flex-shrink-0">
-        <HeroAvatar />
-      </div>
-      <div>
-        <p className="text-[9px] font-semibold text-white/30 uppercase tracking-widest mb-1.5">
-          Where this takes you
-        </p>
-        <p className="text-[15px] font-bold text-white leading-snug mb-2">
-          {heroArchetype}
-        </p>
-        <p className="text-xs text-white/45 leading-relaxed">
-          The coaching above is your path. One meeting at a time.
-        </p>
-      </div>
+    <div className="bg-[#1C3328] rounded-2xl px-4 pt-5 pb-5 flex flex-col items-center text-center">
+      <p className="text-[9px] font-semibold text-white/40 uppercase tracking-widest mb-3">
+        Future you
+      </p>
+      <HeroAvatar />
+      <p className="text-[13px] font-bold text-white leading-snug mt-3">
+        {heroArchetype}
+      </p>
+      <p className="text-[11px] text-white/40 leading-relaxed mt-2">
+        The coaching above is your path.
+      </p>
     </div>
   )
 }
@@ -426,6 +422,8 @@ export default function ResultsPage() {
 
   const c = session.coachingOutput as CoachingOutput | undefined
   const cfg = c ? getOutcomeConfig(c.goal_outcome) : null
+  const profile = getProfile()
+  const heroArchetype = profile?.goal ? getHeroArchetype(profile.goal) : null
 
   return (
     <div className="min-h-screen bg-[#FAF7F2]">
@@ -454,15 +452,15 @@ export default function ResultsPage() {
           </div>
         )}
 
-        {/* Two-column layout: persona sidebar left, coaching right */}
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
+        {/* Three-column layout: current persona | coaching | future persona */}
+        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_200px] gap-6 items-start">
 
-          {/* ── Left: persona sidebar (sticky) ── */}
+          {/* ── Left: current persona (sticky) ── */}
           <div className="lg:sticky lg:top-[73px] lg:self-start">
             {c && <PersonaSidebar coaching={c} />}
           </div>
 
-          {/* ── Right: coaching questions ── */}
+          {/* ── Center: coaching questions ── */}
           <div>
             {coachingLoading && <CoachingLoadingState />}
 
@@ -476,19 +474,19 @@ export default function ResultsPage() {
               </div>
             )}
 
-            {c && !coachingLoading && (() => {
-              const profile = getProfile()
-              const heroArchetype = profile?.goal ? getHeroArchetype(profile.goal) : null
-              return (
-                <div className="space-y-6">
-                  <DiagnosisCard coaching={c} />
-                  <NextMoveCard coaching={c} />
-                  <PatternAndNextLevelCards coaching={c} />
-                  {heroArchetype && <FutureYouCard heroArchetype={heroArchetype} />}
-                  {!isSignedIn && <SaveProgressBanner session={session} />}
-                </div>
-              )
-            })()}
+            {c && !coachingLoading && (
+              <div className="space-y-6">
+                <DiagnosisCard coaching={c} />
+                <NextMoveCard coaching={c} />
+                <PatternAndNextLevelCards coaching={c} />
+                {!isSignedIn && <SaveProgressBanner session={session} />}
+              </div>
+            )}
+          </div>
+
+          {/* ── Right: future persona (sticky) ── */}
+          <div className="lg:sticky lg:top-[73px] lg:self-start">
+            {heroArchetype && <FutureYouCard heroArchetype={heroArchetype} />}
           </div>
 
         </div>
