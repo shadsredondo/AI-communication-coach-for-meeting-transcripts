@@ -15,11 +15,11 @@ import type { Session, CoachingOutput } from '@/types'
 function getOutcomeConfig(outcome: string) {
   return (
     {
-      strong:    { label: 'On track',  dot: 'bg-emerald-400', text: 'text-emerald-500' },
-      partial:   { label: 'Partial',   dot: 'bg-amber-400',   text: 'text-amber-500'   },
-      off_track: { label: 'Off track', dot: 'bg-red-400',     text: 'text-red-500'     },
+      strong:    { label: 'On track',  dot: 'bg-emerald-400', text: 'text-emerald-600' },
+      partial:   { label: 'Partial',   dot: 'bg-amber-400',   text: 'text-amber-600'   },
+      off_track: { label: 'Off track', dot: 'bg-red-400',     text: 'text-red-600'     },
     }[outcome as 'strong' | 'partial' | 'off_track'] ?? {
-      label: 'Partial', dot: 'bg-amber-400', text: 'text-amber-500',
+      label: 'Partial', dot: 'bg-amber-400', text: 'text-amber-600',
     }
   )
 }
@@ -29,30 +29,71 @@ function getOutcomeConfig(outcome: string) {
 function PageLoadingState() {
   return (
     <div className="space-y-5 animate-pulse">
-      <div className="h-3 bg-[#F0EBE3] rounded-full w-48" />
-      <div className="bg-[#2D1A0E] rounded-2xl p-7 space-y-3">
-        <div className="h-2.5 bg-white/10 rounded-full w-3/4" />
-        <div className="h-2.5 bg-white/10 rounded-full w-1/2" />
-        <div className="border-t border-white/10 my-4" />
+      <div className="bg-white border border-[#E8DFD3] rounded-2xl p-6 space-y-3">
+        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-32" />
+        <div className="h-4 bg-[#F0EBE3] rounded-full w-3/5" />
+        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-2/5 mt-2" />
+      </div>
+      <div className="h-3.5 bg-[#F0EBE3] rounded-full w-64" />
+      <div className="bg-[#2D4A3C] rounded-2xl p-7 space-y-3">
         <div className="h-4 bg-white/10 rounded-full w-full" />
         <div className="h-4 bg-white/10 rounded-full w-5/6" />
-        <div className="h-3 bg-white/10 rounded-full w-4/5 mt-2" />
+        <div className="border-t border-white/10 my-3" />
+        <div className="h-3 bg-white/10 rounded-full w-full" />
+        <div className="h-3 bg-white/10 rounded-full w-4/5" />
         <div className="h-3 bg-white/10 rounded-full w-3/4" />
       </div>
+      <div className="h-3.5 bg-[#F0EBE3] rounded-full w-56" />
       <div className="bg-white border border-[#E8DFD3] rounded-2xl p-6 space-y-3">
-        <div className="h-3 bg-[#F0EBE3] rounded-full w-56" />
-        <div className="h-4 bg-[#F0EBE3] rounded-full w-full" />
+        <div className="h-4 bg-[#F0EBE3] rounded-full w-4/5" />
         <div className="h-3 bg-[#F0EBE3] rounded-full w-3/5" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         {[0, 1].map(i => (
-          <div key={i} className="bg-white border border-[#E8DFD3] rounded-2xl p-5 space-y-2">
-            <div className="h-3 bg-[#F0EBE3] rounded-full w-40" />
-            <div className="h-4 bg-[#F0EBE3] rounded-full w-3/4" />
-            <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
+          <div key={i} className="space-y-2">
+            <div className="h-3.5 bg-[#F0EBE3] rounded-full w-40" />
+            <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 space-y-2">
+              <div className="h-4 bg-[#F0EBE3] rounded-full w-3/4" />
+              <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
+            </div>
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+// ─── Profile header ────────────────────────────────────────────────────────────
+
+function ProfileHeader({ coaching }: { coaching: CoachingOutput }) {
+  const profile = getProfile()
+  if (!profile?.goal && !profile?.communicationChallenge) return null
+
+  return (
+    <div className="bg-white border border-[#E8DFD3] rounded-2xl px-6 py-5">
+      <div className="flex flex-wrap gap-x-10 gap-y-3 mb-4">
+        {profile.goal && (
+          <div>
+            <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">
+              Working on
+            </p>
+            <p className="text-sm font-medium text-[#1C1510]">{profile.goal}</p>
+          </div>
+        )}
+        {profile.communicationChallenge && (
+          <div>
+            <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">
+              Stated challenge
+            </p>
+            <p className="text-sm font-medium text-[#1C1510]">{profile.communicationChallenge}</p>
+          </div>
+        )}
+      </div>
+      {coaching.profile_check && (
+        <p className="text-sm text-[#78716C] leading-relaxed border-t border-[#F0EBE3] pt-4 italic">
+          {coaching.profile_check}
+        </p>
+      )}
     </div>
   )
 }
@@ -61,20 +102,19 @@ function PageLoadingState() {
 
 function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
   const [evidenceOpen, setEvidenceOpen] = useState(false)
-  const { diagnosis } = coaching
 
   return (
     <div>
-      <p className="text-[13px] text-[#78716C] font-medium mb-3 leading-snug">
+      <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
         Why did this meeting go the way it did?
       </p>
-      <div className="bg-[#2D1A0E] rounded-2xl overflow-hidden">
+      <div className="bg-[#2D4A3C] rounded-2xl overflow-hidden">
         <div className="p-7">
           <p className="text-[16px] font-semibold text-white leading-snug mb-4">
-            {diagnosis.headline}
+            {coaching.diagnosis.headline}
           </p>
-          <p className="text-sm text-white/60 leading-relaxed">
-            {diagnosis.root_cause}
+          <p className="text-sm text-white/65 leading-relaxed">
+            {coaching.diagnosis.root_cause}
           </p>
         </div>
 
@@ -85,7 +125,7 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
               onClick={() => setEvidenceOpen(o => !o)}
               className="w-full flex items-center gap-2 px-7 py-3.5 border-t border-white/10 hover:bg-white/5 transition-colors text-left"
             >
-              <span className="text-[11px] text-white/30 flex-1">
+              <span className="text-[11px] text-white/35 flex-1">
                 {evidenceOpen ? 'Hide' : 'See'} supporting evidence ({coaching.evidence.length} moment{coaching.evidence.length !== 1 ? 's' : ''})
               </span>
               {evidenceOpen
@@ -117,7 +157,7 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
 function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
   return (
     <div>
-      <p className="text-[13px] text-[#78716C] font-medium mb-3 leading-snug">
+      <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
         What should I do differently next time?
       </p>
       <div className="bg-white border-2 border-[#C96442] rounded-2xl p-6">
@@ -132,14 +172,13 @@ function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
   )
 }
 
-// ─── Q3 + Q4: Pattern and next level cards ─────────────────────────────────────
+// ─── Q3 + Q4: Pattern and next level ──────────────────────────────────────────
 
 function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {/* Q3 */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <div>
-        <p className="text-[13px] text-[#78716C] font-medium mb-3 leading-snug">
+        <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
           What pattern keeps showing up?
         </p>
         <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 h-full">
@@ -152,9 +191,8 @@ function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
         </div>
       </div>
 
-      {/* Q4 */}
       <div>
-        <p className="text-[13px] text-[#78716C] font-medium mb-3 leading-snug">
+        <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
           What would someone one level up do?
         </p>
         <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 h-full">
@@ -166,65 +204,6 @@ function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
           </p>
         </div>
       </div>
-    </div>
-  )
-}
-
-// ─── Rewrites (collapsed) ──────────────────────────────────────────────────────
-
-function RewritesCard({ coaching }: { coaching: CoachingOutput }) {
-  const [open, setOpen] = useState(false)
-  const rewrites = coaching.rewrites ?? []
-  if (rewrites.length === 0) return null
-
-  return (
-    <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-6 py-4 hover:bg-[#F5F0EA] transition-colors text-left"
-      >
-        <div>
-          <p className="text-sm font-semibold text-[#1C1510]">Say it stronger</p>
-          <p className="text-xs text-[#9E9489] mt-0.5">
-            {rewrites.length} rewrite suggestion{rewrites.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-        {open
-          ? <ChevronUp size={14} className="text-[#B8A99A] flex-shrink-0" />
-          : <ChevronDown size={14} className="text-[#B8A99A] flex-shrink-0" />}
-      </button>
-
-      {open && (
-        <div className="px-6 pb-5 space-y-3 border-t border-[#E8DFD3]">
-          <div className="h-3" />
-          {rewrites.map((r, i) => (
-            <div key={i} className="rounded-xl border border-[#E8DFD3] overflow-hidden">
-              <div className="grid grid-cols-2 divide-x divide-[#E8DFD3]">
-                <div className="p-4">
-                  <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">
-                    What you said
-                  </p>
-                  <p className="text-sm text-[#78716C] italic leading-relaxed">
-                    &ldquo;{r.original}&rdquo;
-                  </p>
-                </div>
-                <div className="p-4 bg-white">
-                  <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-wider mb-2">
-                    Stronger version
-                  </p>
-                  <p className="text-sm text-[#1C1510] font-medium leading-relaxed">
-                    &ldquo;{r.rewrite}&rdquo;
-                  </p>
-                </div>
-              </div>
-              <div className="px-4 py-2.5 bg-[#C96442]/5 border-t border-[#C96442]/10">
-                <p className="text-xs text-[#C96442] leading-relaxed">{r.why}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
@@ -365,7 +344,6 @@ export default function ResultsPage() {
     }
   }, [])
 
-  // Re-fetch if session has no coaching or was generated with an old schema
   useEffect(() => {
     if (!session) return
     const hasNewSchema = session.coachingOutput && 'diagnosis' in session.coachingOutput
@@ -388,7 +366,7 @@ export default function ResultsPage() {
 
       {/* Nav */}
       <nav className="bg-[#FAF7F2] border-b border-[#E8DFD3] px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link
             href="/dashboard"
             className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors"
@@ -401,7 +379,7 @@ export default function ResultsPage() {
         </div>
       </nav>
 
-      <main className="max-w-2xl mx-auto px-6 py-8">
+      <main className="max-w-4xl mx-auto px-6 py-8">
 
         {/* Outcome dot */}
         {cfg && (
@@ -413,10 +391,10 @@ export default function ResultsPage() {
           </div>
         )}
 
-        {/* Loading state */}
+        {/* Loading */}
         {coachingLoading && <PageLoadingState />}
 
-        {/* Error state */}
+        {/* Error */}
         {coachingError && !coachingLoading && (
           <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
             <p className="text-sm text-red-600 mb-3">{coachingError}</p>
@@ -432,11 +410,11 @@ export default function ResultsPage() {
 
         {/* Content */}
         {c && !coachingLoading && (
-          <div className="space-y-6">
+          <div className="space-y-7">
+            <ProfileHeader coaching={c} />
             <DiagnosisCard coaching={c} />
             <NextMoveCard coaching={c} />
             <PatternAndNextLevelCards coaching={c} />
-            <RewritesCard coaching={c} />
             {!isSignedIn && <SaveProgressBanner session={session} />}
           </div>
         )}

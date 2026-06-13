@@ -119,6 +119,7 @@ export interface Session {
 
 export interface CoachingOutput {
   goal_outcome: 'strong' | 'partial' | 'off_track'
+  profile_check?: string
   diagnosis: {
     headline: string
     root_cause: string
