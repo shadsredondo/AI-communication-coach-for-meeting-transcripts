@@ -161,8 +161,35 @@ Single valid JSON object. No text before or after it.
       "quote": "Direct transcript excerpt.",
       "reveals": "One sentence. What this moment shows about the diagnosis."
     }
-  ]
+  ],
+
+  "personas": {
+    "current": {
+      "archetype": "The [X] — 2–4 words starting with 'The'. A memorable character name for who this person is right now, grounded in the pattern from this meeting.",
+      "traits": [
+        "A concrete behaviour — how they show up today. Max 8 words. Not adjectives — observable actions.",
+        "Another trait.",
+        "A third trait."
+      ]
+    },
+    "hero": {
+      "archetype": "The [X] — 2–4 words starting with 'The'. Who they become when they close this gap. Aspirational but grounded in what the next level actually looks like.",
+      "traits": [
+        "The evolved version of a current trait. Concrete. Max 8 words.",
+        "Another evolved trait.",
+        "A third."
+      ]
+    }
+  }
 }
+
+## Personas — additional guidance
+
+- Archetype names are character types, not job titles. "The Room Reader", "The Decisive Strategist", "The Consensus Builder", "The Portfolio Thinker."
+- Current traits describe observable behaviours from this meeting — what the person actually does that holds them back.
+- Hero traits are the direct evolution — not a different person, but the same person having built the missing skill.
+- The two archetypes should feel like the same person at different stages of the same journey.
+- Make the hero feel genuinely worth becoming, not just "better at communication."
 
 ## Enforce these limits strictly
 

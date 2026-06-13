@@ -24,75 +24,162 @@ function getOutcomeConfig(outcome: string) {
   )
 }
 
-// ─── Loading skeleton ──────────────────────────────────────────────────────────
+// ─── Avatar SVGs ───────────────────────────────────────────────────────────────
 
-function PageLoadingState() {
+function CurrentAvatar() {
   return (
-    <div className="space-y-5 animate-pulse">
-      <div className="bg-white border border-[#E8DFD3] rounded-2xl p-6 space-y-3">
-        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-32" />
-        <div className="h-4 bg-[#F0EBE3] rounded-full w-3/5" />
-        <div className="h-2.5 bg-[#F0EBE3] rounded-full w-2/5 mt-2" />
-      </div>
-      <div className="h-3.5 bg-[#F0EBE3] rounded-full w-64" />
-      <div className="bg-[#1C3328] rounded-2xl p-7 space-y-3">
-        <div className="h-4 bg-white/10 rounded-full w-full" />
-        <div className="h-4 bg-white/10 rounded-full w-5/6" />
-        <div className="border-t border-white/10 my-3" />
-        <div className="h-3 bg-white/10 rounded-full w-full" />
-        <div className="h-3 bg-white/10 rounded-full w-4/5" />
-        <div className="h-3 bg-white/10 rounded-full w-3/4" />
-      </div>
-      <div className="h-3.5 bg-[#F0EBE3] rounded-full w-56" />
-      <div className="bg-white border border-[#E8DFD3] rounded-2xl p-6 space-y-3">
-        <div className="h-4 bg-[#F0EBE3] rounded-full w-4/5" />
-        <div className="h-3 bg-[#F0EBE3] rounded-full w-3/5" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        {[0, 1].map(i => (
-          <div key={i} className="space-y-2">
-            <div className="h-3.5 bg-[#F0EBE3] rounded-full w-40" />
-            <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 space-y-2">
-              <div className="h-4 bg-[#F0EBE3] rounded-full w-3/4" />
-              <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <svg width="72" height="88" viewBox="0 0 72 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="14" y="58" width="44" height="28" rx="12" fill="#C9B89A"/>
+      <rect x="29" y="49" width="14" height="12" rx="4" fill="#C9B89A"/>
+      <circle cx="36" cy="33" r="22" fill="#D4C4A8"/>
+      <path d="M15 29 Q17 11 36 9 Q55 11 57 29 Q52 18 36 16 Q20 18 15 29Z" fill="#6B5F52"/>
+      <ellipse cx="28" cy="33" rx="3.5" ry="4" fill="#fff"/>
+      <ellipse cx="44" cy="33" rx="3.5" ry="4" fill="#fff"/>
+      <circle cx="29" cy="34" r="2" fill="#4A3F35"/>
+      <circle cx="45" cy="34" r="2" fill="#4A3F35"/>
+      <path d="M29 44 Q36 46 43 44" stroke="#8B7B6B" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      <path d="M30 27 Q33 25 36 27" stroke="#8B7B6B" stroke-width="1" stroke-linecap="round" fill="none" opacity=".4"/>
+      <path d="M36 27 Q39 25 42 27" stroke="#8B7B6B" stroke-width="1" stroke-linecap="round" fill="none" opacity=".4"/>
+    </svg>
   )
 }
 
-// ─── Profile header ────────────────────────────────────────────────────────────
+function HeroAvatar() {
+  return (
+    <svg width="72" height="88" viewBox="0 0 72 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 63 Q36 78 60 63 L56 88 H16 Z" fill="#2E6B52" opacity=".5"/>
+      <rect x="14" y="56" width="44" height="30" rx="12" fill="#2E6B52"/>
+      <rect x="29" y="47" width="14" height="12" rx="4" fill="#3D8A68"/>
+      <circle cx="36" cy="32" r="22" fill="#3D8A68"/>
+      <path d="M15 28 Q17 10 36 8 Q55 10 57 28 Q52 17 36 15 Q20 17 15 28Z" fill="#1C4A35"/>
+      <ellipse cx="28" cy="32" rx="3.5" ry="4" fill="#fff"/>
+      <ellipse cx="44" cy="32" rx="3.5" ry="4" fill="#fff"/>
+      <circle cx="28" cy="32" r="2" fill="#1C3328"/>
+      <circle cx="44" cy="32" r="2" fill="#1C3328"/>
+      <path d="M27 43 Q36 50 45 43" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      <path d="M50 10 L51.2 14 L55.5 14 L52 16.8 L53.2 21 L50 18.5 L46.8 21 L48 16.8 L44.5 14 L48.8 14 Z" fill="#F59E0B"/>
+    </svg>
+  )
+}
 
-function ProfileHeader({ coaching }: { coaching: CoachingOutput }) {
+// ─── Persona sidebar ───────────────────────────────────────────────────────────
+
+function PersonaSidebar({ coaching }: { coaching: CoachingOutput }) {
+  const personas = coaching.personas
   const profile = getProfile()
-  if (!profile?.goal && !profile?.communicationChallenge) return null
 
   return (
-    <div className="bg-white border border-[#E8DFD3] rounded-2xl px-6 py-5">
-      <div className="flex flex-wrap gap-x-10 gap-y-3 mb-4">
-        {profile.goal && (
-          <div>
-            <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">
-              Working on
+    <div className="flex flex-col gap-3">
+
+      {/* Profile context */}
+      {(profile?.goal || profile?.communicationChallenge) && (
+        <div className="bg-white border border-[#E8DFD3] rounded-2xl px-4 py-4">
+          {profile.goal && (
+            <div className="mb-3">
+              <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">
+                Working on
+              </p>
+              <p className="text-xs font-medium text-[#1C1510] leading-snug">{profile.goal}</p>
+            </div>
+          )}
+          {profile.communicationChallenge && (
+            <div>
+              <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">
+                Stated challenge
+              </p>
+              <p className="text-xs font-medium text-[#1C1510] leading-snug">
+                {profile.communicationChallenge}
+              </p>
+            </div>
+          )}
+          {coaching.profile_check && (
+            <p className="text-xs text-[#78716C] leading-relaxed mt-3 pt-3 border-t border-[#F0EBE3] italic">
+              {coaching.profile_check}
             </p>
-            <p className="text-sm font-medium text-[#1C1510]">{profile.goal}</p>
+          )}
+        </div>
+      )}
+
+      {/* Personas */}
+      {personas && (
+        <>
+          {/* Current persona */}
+          <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl overflow-hidden">
+            <div className="px-4 pt-5 pb-4 flex flex-col items-center text-center">
+              <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-3">
+                You, right now
+              </p>
+              <CurrentAvatar />
+              <p className="text-[13px] font-bold text-[#1C1510] leading-snug mt-3 mb-4">
+                {personas.current.archetype}
+              </p>
+              <div className="w-full text-left space-y-2">
+                {personas.current.traits.map((trait, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C9B89A] flex-shrink-0 mt-[5px]" />
+                    <p className="text-xs text-[#78716C] leading-snug">{trait}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-        {profile.communicationChallenge && (
-          <div>
-            <p className="text-[10px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">
-              Stated challenge
+
+          {/* Arrow */}
+          <div className="flex items-center justify-center py-1">
+            <svg width="24" height="32" viewBox="0 0 24 32" fill="none">
+              <line x1="12" y1="0" x2="12" y2="24" stroke="#C96442" stroke-width="1.5" stroke-dasharray="3 3" opacity=".5"/>
+              <path d="M6 20 L12 28 L18 20" stroke="#C96442" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>
+            </svg>
+          </div>
+
+          {/* Hero persona */}
+          <div className="bg-[#1C3328] rounded-2xl overflow-hidden">
+            <div className="px-4 pt-5 pb-4 flex flex-col items-center text-center">
+              <p className="text-[9px] font-semibold text-white/30 uppercase tracking-widest mb-3">
+                Where you're headed
+              </p>
+              <HeroAvatar />
+              <p className="text-[13px] font-bold text-white leading-snug mt-3 mb-4">
+                {personas.hero.archetype}
+              </p>
+              <div className="w-full text-left space-y-2">
+                {personas.hero.traits.map((trait, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF85] flex-shrink-0 mt-[5px]" />
+                    <p className="text-xs text-white/60 leading-snug">{trait}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bridge */}
+          <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-xl px-4 py-3 text-center">
+            <p className="text-xs text-[#78716C] leading-relaxed">
+              The coaching on the right is your path from here to there.{' '}
+              <span className="font-semibold text-[#C96442]">One meeting at a time.</span>
             </p>
-            <p className="text-sm font-medium text-[#1C1510]">{profile.communicationChallenge}</p>
           </div>
-        )}
-      </div>
-      {coaching.profile_check && (
-        <p className="text-sm text-[#78716C] leading-relaxed border-t border-[#F0EBE3] pt-4 italic">
-          {coaching.profile_check}
-        </p>
+        </>
+      )}
+
+      {/* Loading skeleton for personas */}
+      {!personas && (
+        <div className="animate-pulse space-y-3">
+          <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl p-4 space-y-3">
+            <div className="w-16 h-16 rounded-full bg-[#E8DFD3] mx-auto" />
+            <div className="h-3 bg-[#E8DFD3] rounded-full w-3/4 mx-auto" />
+            <div className="space-y-2">
+              <div className="h-2.5 bg-[#E8DFD3] rounded-full w-full" />
+              <div className="h-2.5 bg-[#E8DFD3] rounded-full w-5/6" />
+            </div>
+          </div>
+          <div className="h-8" />
+          <div className="bg-[#1C3328]/20 rounded-2xl p-4 space-y-3">
+            <div className="w-16 h-16 rounded-full bg-white/20 mx-auto" />
+            <div className="h-3 bg-white/20 rounded-full w-3/4 mx-auto" />
+          </div>
+        </div>
       )}
     </div>
   )
@@ -109,8 +196,8 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
         Why did this meeting go the way it did?
       </p>
       <div className="bg-[#1C3328] rounded-2xl overflow-hidden">
-        <div className="p-7">
-          <p className="text-[16px] font-semibold text-white leading-snug mb-4">
+        <div className="p-6">
+          <p className="text-[15px] font-semibold text-white leading-snug mb-3">
             {coaching.diagnosis.headline}
           </p>
           <p className="text-sm text-white/65 leading-relaxed">
@@ -123,24 +210,24 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
             <button
               type="button"
               onClick={() => setEvidenceOpen(o => !o)}
-              className="w-full flex items-center gap-2 px-7 py-3.5 border-t border-white/10 hover:bg-white/5 transition-colors text-left"
+              className="w-full flex items-center gap-2 px-6 py-3 border-t border-white/10 hover:bg-white/5 transition-colors text-left"
             >
-              <span className="text-[11px] text-white/35 flex-1">
+              <span className="text-[11px] text-white/30 flex-1">
                 {evidenceOpen ? 'Hide' : 'See'} supporting evidence ({coaching.evidence.length} moment{coaching.evidence.length !== 1 ? 's' : ''})
               </span>
               {evidenceOpen
-                ? <ChevronUp size={12} className="text-white/25 flex-shrink-0" />
-                : <ChevronDown size={12} className="text-white/25 flex-shrink-0" />}
+                ? <ChevronUp size={12} className="text-white/20 flex-shrink-0" />
+                : <ChevronDown size={12} className="text-white/20 flex-shrink-0" />}
             </button>
 
             {evidenceOpen && (
-              <div className="px-7 pb-6 space-y-3">
+              <div className="px-6 pb-5 space-y-2.5">
                 {coaching.evidence.map((item, i) => (
-                  <div key={i} className="bg-white/5 rounded-xl p-4">
-                    <p className="text-xs text-white/55 italic leading-relaxed mb-2">
+                  <div key={i} className="bg-white/5 rounded-xl p-3.5">
+                    <p className="text-xs text-white/50 italic leading-relaxed mb-1.5">
                       &ldquo;{item.quote}&rdquo;
                     </p>
-                    <p className="text-xs text-white/35 leading-snug">{item.reveals}</p>
+                    <p className="text-xs text-white/30 leading-snug">{item.reveals}</p>
                   </div>
                 ))}
               </div>
@@ -152,7 +239,7 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
   )
 }
 
-// ─── Q2: Next move card ────────────────────────────────────────────────────────
+// ─── Q2: Next move ─────────────────────────────────────────────────────────────
 
 function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
   return (
@@ -160,8 +247,8 @@ function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
       <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
         What should I do differently next time?
       </p>
-      <div className="bg-white border-2 border-[#C96442] rounded-2xl p-6">
-        <p className="text-[14px] font-semibold text-[#1C1510] leading-snug mb-2.5">
+      <div className="bg-white border-2 border-[#C96442] rounded-2xl p-5">
+        <p className="text-[14px] font-semibold text-[#1C1510] leading-snug mb-2">
           {coaching.next_move.action}
         </p>
         <p className="text-sm text-[#78716C] leading-relaxed">
@@ -172,11 +259,11 @@ function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
   )
 }
 
-// ─── Q3 + Q4: Pattern and next level ──────────────────────────────────────────
+// ─── Q3 + Q4 ───────────────────────────────────────────────────────────────────
 
 function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div className="grid grid-cols-2 gap-4">
       <div>
         <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
           What pattern keeps showing up?
@@ -190,7 +277,6 @@ function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
           </p>
         </div>
       </div>
-
       <div>
         <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
           What would someone one level up do?
@@ -203,6 +289,43 @@ function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
             {coaching.next_level.in_this_meeting}
           </p>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Loading skeleton for coaching content ─────────────────────────────────────
+
+function CoachingLoadingState() {
+  return (
+    <div className="space-y-5 animate-pulse">
+      <div>
+        <div className="h-3.5 bg-[#E8DFD3] rounded-full w-64 mb-3" />
+        <div className="bg-[#1C3328]/20 rounded-2xl p-6 space-y-2.5">
+          <div className="h-4 bg-white/30 rounded-full w-full" />
+          <div className="h-4 bg-white/30 rounded-full w-5/6" />
+          <div className="h-3 bg-white/20 rounded-full w-full mt-2" />
+          <div className="h-3 bg-white/20 rounded-full w-4/5" />
+        </div>
+      </div>
+      <div>
+        <div className="h-3.5 bg-[#E8DFD3] rounded-full w-56 mb-3" />
+        <div className="bg-white border-2 border-[#E8DFD3] rounded-2xl p-5 space-y-2">
+          <div className="h-4 bg-[#F0EBE3] rounded-full w-4/5" />
+          <div className="h-3 bg-[#F0EBE3] rounded-full w-3/5" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        {[0, 1].map(i => (
+          <div key={i}>
+            <div className="h-3.5 bg-[#E8DFD3] rounded-full w-40 mb-3" />
+            <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 space-y-2">
+              <div className="h-4 bg-[#F0EBE3] rounded-full w-3/4" />
+              <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
+              <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5" />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -233,53 +356,36 @@ function SaveProgressBanner({ session }: { session: Session }) {
 
   if (saved) {
     return (
-      <div className="bg-[#F0EBE3] border border-[#E8DFD3] rounded-2xl px-6 py-5 text-center">
+      <div className="bg-[#F0EBE3] border border-[#E8DFD3] rounded-2xl px-5 py-4 text-center">
         <p className="text-sm font-semibold text-[#1C1510] mb-1">You&rsquo;re all set ✓</p>
-        <p className="text-xs text-[#78716C]">
-          Your report is saved. Sign in anytime to pick up where you left off.
-        </p>
+        <p className="text-xs text-[#78716C]">Saved. Sign in anytime to pick up where you left off.</p>
       </div>
     )
   }
 
   return (
     <div className="bg-[#FAF7F2] border border-[#E8DFD3] rounded-2xl overflow-hidden">
-      <div className="px-6 pt-6 pb-5">
-        <p className="text-base font-semibold text-[#1C1510] mb-1">
-          Keep this report. Track how you improve.
+      <div className="px-5 pt-5 pb-4">
+        <p className="text-sm font-semibold text-[#1C1510] mb-1">Keep this. Track how you improve.</p>
+        <p className="text-xs text-[#78716C] mb-4 leading-relaxed">
+          Create a free account — every report is saved so you can see your growth over time.
         </p>
-        <p className="text-sm text-[#78716C] mb-5 leading-relaxed">
-          Create a free account and every coaching report you generate will be saved — so you can see your growth over time.
-        </p>
-        <form onSubmit={handleSave} className="space-y-3">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
+        <form onSubmit={handleSave} className="space-y-2.5">
+          <input type="email" placeholder="Email" value={email}
             onChange={e => { setEmail(e.target.value); setError('') }}
-            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
-          />
-          <input
-            type="password"
-            placeholder="Password (6+ characters)"
-            value={password}
+            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-3.5 py-2.5 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
+          <input type="password" placeholder="Password (6+ characters)" value={password}
             onChange={e => { setPassword(e.target.value); setError('') }}
-            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
-          />
+            className="w-full rounded-xl border border-[#E8DFD3] bg-white px-3.5 py-2.5 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
           {error && <p className="text-xs text-red-500">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#C96442] hover:bg-[#B85839] disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-all shadow-lg shadow-[#C96442]/20"
-          >
+          <button type="submit" disabled={loading}
+            className="w-full bg-[#C96442] hover:bg-[#B85839] disabled:opacity-60 text-white font-medium py-2.5 rounded-xl text-sm transition-all">
             {loading ? 'Saving…' : 'Save my report'}
           </button>
         </form>
-        <p className="text-[11px] text-[#B8A99A] text-center mt-3">
+        <p className="text-[11px] text-[#B8A99A] text-center mt-2.5">
           Already have an account?{' '}
-          <a href="/auth" className="underline hover:text-[#78716C] transition-colors">
-            Sign in
-          </a>
+          <a href="/auth" className="underline hover:text-[#78716C] transition-colors">Sign in</a>
         </p>
       </div>
     </div>
@@ -366,11 +472,8 @@ export default function ResultsPage() {
 
       {/* Nav */}
       <nav className="bg-[#FAF7F2] border-b border-[#E8DFD3] px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors"
-          >
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
             <ArrowLeft size={15} />
             All sessions
           </Link>
@@ -379,7 +482,7 @@ export default function ResultsPage() {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8">
 
         {/* Outcome dot */}
         {cfg && (
@@ -391,33 +494,53 @@ export default function ResultsPage() {
           </div>
         )}
 
-        {/* Loading */}
-        {coachingLoading && <PageLoadingState />}
+        {/* Two-column layout: persona sidebar left, coaching right */}
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
 
-        {/* Error */}
-        {coachingError && !coachingLoading && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
-            <p className="text-sm text-red-600 mb-3">{coachingError}</p>
-            <button
-              type="button"
-              onClick={() => fetchCoaching(session)}
-              className="text-xs font-semibold text-red-600 hover:text-red-800 underline"
-            >
-              Try again
-            </button>
+          {/* ── Left: persona sidebar (sticky) ── */}
+          <div className="lg:sticky lg:top-[73px] lg:self-start">
+            {c
+              ? <PersonaSidebar coaching={c} />
+              : coachingLoading
+              ? (
+                <div className="animate-pulse space-y-3">
+                  <div className="bg-white border border-[#E8DFD3] rounded-2xl p-4 h-24" />
+                  <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl p-4 h-64" />
+                  <div className="h-8 flex items-center justify-center">
+                    <div className="w-px h-full bg-[#E8DFD3]" />
+                  </div>
+                  <div className="bg-[#1C3328]/15 rounded-2xl p-4 h-64" />
+                </div>
+              )
+              : null
+            }
           </div>
-        )}
 
-        {/* Content */}
-        {c && !coachingLoading && (
-          <div className="space-y-7">
-            <ProfileHeader coaching={c} />
-            <DiagnosisCard coaching={c} />
-            <NextMoveCard coaching={c} />
-            <PatternAndNextLevelCards coaching={c} />
-            {!isSignedIn && <SaveProgressBanner session={session} />}
+          {/* ── Right: coaching questions ── */}
+          <div>
+            {coachingLoading && <CoachingLoadingState />}
+
+            {coachingError && !coachingLoading && (
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
+                <p className="text-sm text-red-600 mb-3">{coachingError}</p>
+                <button type="button" onClick={() => fetchCoaching(session)}
+                  className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {c && !coachingLoading && (
+              <div className="space-y-6">
+                <DiagnosisCard coaching={c} />
+                <NextMoveCard coaching={c} />
+                <PatternAndNextLevelCards coaching={c} />
+                {!isSignedIn && <SaveProgressBanner session={session} />}
+              </div>
+            )}
           </div>
-        )}
+
+        </div>
 
         <div className="h-10" />
       </main>

@@ -120,6 +120,10 @@ export interface Session {
 export interface CoachingOutput {
   goal_outcome: 'strong' | 'partial' | 'off_track'
   profile_check?: string
+  personas?: {
+    current: { archetype: string; traits: string[] }
+    hero: { archetype: string; traits: string[] }
+  }
   diagnosis: {
     headline: string
     root_cause: string
