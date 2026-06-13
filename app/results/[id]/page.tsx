@@ -35,7 +35,7 @@ function PageLoadingState() {
         <div className="h-2.5 bg-[#F0EBE3] rounded-full w-2/5 mt-2" />
       </div>
       <div className="h-3.5 bg-[#F0EBE3] rounded-full w-64" />
-      <div className="bg-[#2D4A3C] rounded-2xl p-7 space-y-3">
+      <div className="bg-[#1C3328] rounded-2xl p-7 space-y-3">
         <div className="h-4 bg-white/10 rounded-full w-full" />
         <div className="h-4 bg-white/10 rounded-full w-5/6" />
         <div className="border-t border-white/10 my-3" />
@@ -108,7 +108,7 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
       <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
         Why did this meeting go the way it did?
       </p>
-      <div className="bg-[#2D4A3C] rounded-2xl overflow-hidden">
+      <div className="bg-[#1C3328] rounded-2xl overflow-hidden">
         <div className="p-7">
           <p className="text-[16px] font-semibold text-white leading-snug mb-4">
             {coaching.diagnosis.headline}
