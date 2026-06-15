@@ -16,11 +16,11 @@ import type { Session, CoachingOutput } from '@/types'
 function getOutcomeConfig(outcome: string) {
   return (
     {
-      strong:    { label: 'On track',  dot: 'bg-emerald-400', text: 'text-emerald-600' },
-      partial:   { label: 'Partial',   dot: 'bg-amber-400',   text: 'text-amber-600'   },
-      off_track: { label: 'Off track', dot: 'bg-red-400',     text: 'text-red-600'     },
+      strong:    { label: 'On track',     dot: 'bg-emerald-300', text: 'text-emerald-600' },
+      partial:   { label: 'In progress',  dot: 'bg-amber-300',   text: 'text-amber-500'   },
+      off_track: { label: 'Room to grow', dot: 'bg-rose-300',    text: 'text-rose-500'    },
     }[outcome as 'strong' | 'partial' | 'off_track'] ?? {
-      label: 'Partial', dot: 'bg-amber-400', text: 'text-amber-600',
+      label: 'In progress', dot: 'bg-amber-300', text: 'text-amber-500',
     }
   )
 }
@@ -76,8 +76,8 @@ function PersonaSidebar() {
 
       {/* Current persona — avatar first */}
       {currentArchetype && (
-        <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl px-4 pt-5 pb-5 flex flex-col items-center text-center">
-          <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-3">
+        <div className="bg-white rounded-3xl px-4 pt-6 pb-5 flex flex-col items-center text-center shadow-sm border border-[#EDE8E0]">
+          <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-[0.15em] mb-3">
             Current you
           </p>
           <CurrentAvatar />
@@ -87,27 +87,25 @@ function PersonaSidebar() {
         </div>
       )}
 
-      {/* Profile context — goal + challenge only */}
-      {(profile?.goal || profile?.communicationChallenge) && (
-        <div className="bg-white border border-[#E8DFD3] rounded-2xl px-4 py-4">
-          {profile.goal && (
-            <div className="mb-3">
-              <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">
-                Working on
-              </p>
-              <p className="text-xs font-medium text-[#1C1510] leading-snug">{profile.goal}</p>
-            </div>
-          )}
-          {profile.communicationChallenge && (
-            <div>
-              <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-1">
-                Stated challenge
-              </p>
-              <p className="text-xs font-medium text-[#1C1510] leading-snug">
-                {profile.communicationChallenge}
-              </p>
-            </div>
-          )}
+      {/* Goal */}
+      {profile?.goal && (
+        <div className="bg-white rounded-3xl px-4 py-4 shadow-sm border border-[#EDE8E0]">
+          <p className="text-[9px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-1.5">
+            You were working on
+          </p>
+          <p className="text-sm font-semibold text-[#1C1510] leading-snug">{profile.goal}</p>
+        </div>
+      )}
+
+      {/* Challenge */}
+      {profile?.communicationChallenge && (
+        <div className="bg-white rounded-3xl px-4 py-4 shadow-sm border border-[#EDE8E0]">
+          <p className="text-[9px] font-semibold text-[#C96442] uppercase tracking-[0.15em] mb-1.5">
+            Biggest challenge
+          </p>
+          <p className="text-sm font-semibold text-[#1C1510] leading-snug">
+            {profile.communicationChallenge}
+          </p>
         </div>
       )}
     </div>
@@ -118,15 +116,15 @@ function PersonaSidebar() {
 
 function FutureYouCard({ heroArchetype }: { heroArchetype: string }) {
   return (
-    <div className="bg-[#1C3328] rounded-2xl px-4 pt-5 pb-5 flex flex-col items-center text-center">
-      <p className="text-[9px] font-semibold text-white/40 uppercase tracking-widest mb-3">
+    <div className="bg-[#EEF4F0] rounded-3xl px-4 pt-6 pb-5 flex flex-col items-center text-center shadow-sm border border-[#D4E5DB]">
+      <p className="text-[9px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-3">
         Future you
       </p>
       <HeroAvatar />
-      <p className="text-[13px] font-bold text-white leading-snug mt-3">
+      <p className="text-[13px] font-bold text-[#1C3328] leading-snug mt-3">
         {heroArchetype}
       </p>
-      <p className="text-[11px] text-white/40 leading-relaxed mt-2">
+      <p className="text-[11px] text-[#6B9A80] leading-relaxed mt-2">
         The coaching above is your path.
       </p>
     </div>
@@ -140,15 +138,15 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
 
   return (
     <div>
-      <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
+      <p className="text-[11px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-4">
         Why did this meeting go the way it did?
       </p>
-      <div className="bg-[#1C3328] rounded-2xl overflow-hidden">
-        <div className="p-6">
-          <p className="text-[15px] font-semibold text-white leading-snug mb-3">
+      <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#EDE8E0]">
+        <div className="p-7">
+          <p className="text-2xl font-bold text-[#1C1510] leading-snug mb-4">
             {coaching.diagnosis.headline}
           </p>
-          <p className="text-sm text-white/65 leading-relaxed">
+          <p className="text-[15px] text-[#6B6259] leading-relaxed">
             {coaching.diagnosis.root_cause}
           </p>
         </div>
@@ -158,24 +156,24 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
             <button
               type="button"
               onClick={() => setEvidenceOpen(o => !o)}
-              className="w-full flex items-center gap-2 px-6 py-3 border-t border-white/10 hover:bg-white/5 transition-colors text-left"
+              className="w-full flex items-center gap-2 px-7 py-3.5 border-t border-[#F0EBE3] hover:bg-[#FAF7F2] transition-colors text-left"
             >
-              <span className="text-[11px] text-white/30 flex-1">
-                {evidenceOpen ? 'Hide' : 'See'} supporting evidence ({coaching.evidence.length} moment{coaching.evidence.length !== 1 ? 's' : ''})
+              <span className="text-[11px] text-[#B8A99A] flex-1">
+                {evidenceOpen ? 'Hide' : 'See'} supporting moments ({coaching.evidence.length})
               </span>
               {evidenceOpen
-                ? <ChevronUp size={12} className="text-white/20 flex-shrink-0" />
-                : <ChevronDown size={12} className="text-white/20 flex-shrink-0" />}
+                ? <ChevronUp size={12} className="text-[#B8A99A] flex-shrink-0" />
+                : <ChevronDown size={12} className="text-[#B8A99A] flex-shrink-0" />}
             </button>
 
             {evidenceOpen && (
-              <div className="px-6 pb-5 space-y-2.5">
+              <div className="px-7 pb-6 space-y-3">
                 {coaching.evidence.map((item, i) => (
-                  <div key={i} className="bg-white/5 rounded-xl p-3.5">
-                    <p className="text-xs text-white/50 italic leading-relaxed mb-1.5">
+                  <div key={i} className="bg-[#FAF7F2] rounded-2xl p-4">
+                    <p className="text-sm text-[#78716C] italic leading-relaxed mb-1.5">
                       &ldquo;{item.quote}&rdquo;
                     </p>
-                    <p className="text-xs text-white/30 leading-snug">{item.reveals}</p>
+                    <p className="text-xs text-[#B8A99A] leading-snug">{item.reveals}</p>
                   </div>
                 ))}
               </div>
@@ -192,16 +190,25 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
 function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
   return (
     <div>
-      <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
+      <p className="text-[11px] font-semibold text-[#C96442] uppercase tracking-[0.15em] mb-4">
         What should I do differently next time?
       </p>
-      <div className="bg-white border-2 border-[#C96442] rounded-2xl p-5">
-        <p className="text-[14px] font-semibold text-[#1C1510] leading-snug mb-2">
-          {coaching.next_move.action}
-        </p>
-        <p className="text-sm text-[#78716C] leading-relaxed">
-          {coaching.next_move.why}
-        </p>
+      <div className="bg-white rounded-3xl p-7 shadow-sm border border-[#EDE8E0]">
+        <div className="flex gap-4">
+          <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-[#FFF0EB] flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V17H9v-2.8C7.2 13.16 6 11.22 6 9a6 6 0 0 1 6-6z" stroke="#C96442" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <p className="text-lg font-bold text-[#1C1510] leading-snug mb-2">
+              {coaching.next_move.action}
+            </p>
+            <p className="text-[15px] text-[#6B6259] leading-relaxed">
+              {coaching.next_move.why}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -211,29 +218,29 @@ function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
 
 function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-5">
       <div>
-        <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
+        <p className="text-[11px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-4">
           What pattern keeps showing up?
         </p>
-        <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 h-full">
-          <p className="text-[13px] font-semibold text-[#1C1510] leading-snug mb-2">
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#EDE8E0] h-full">
+          <p className="text-base font-bold text-[#1C1510] leading-snug mb-2.5">
             {coaching.pattern.name}
           </p>
-          <p className="text-sm text-[#78716C] leading-relaxed">
+          <p className="text-[15px] text-[#6B6259] leading-relaxed">
             {coaching.pattern.observation}
           </p>
         </div>
       </div>
       <div>
-        <p className="text-[14px] font-semibold text-[#1C1510] mb-3">
+        <p className="text-[11px] font-semibold text-[#6B7E9F] uppercase tracking-[0.15em] mb-4">
           What would someone one level up do?
         </p>
-        <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 h-full">
-          <p className="text-[13px] font-semibold text-[#1C1510] leading-snug mb-2">
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#EDE8E0] h-full">
+          <p className="text-base font-bold text-[#1C1510] leading-snug mb-2.5">
             {coaching.next_level.capability}
           </p>
-          <p className="text-sm text-[#78716C] leading-relaxed">
+          <p className="text-[15px] text-[#6B6259] leading-relaxed">
             {coaching.next_level.in_this_meeting}
           </p>
         </div>
@@ -248,29 +255,30 @@ function CoachingLoadingState() {
   return (
     <div className="space-y-5 animate-pulse">
       <div>
-        <div className="h-3.5 bg-[#E8DFD3] rounded-full w-64 mb-3" />
-        <div className="bg-[#1C3328]/20 rounded-2xl p-6 space-y-2.5">
-          <div className="h-4 bg-white/30 rounded-full w-full" />
-          <div className="h-4 bg-white/30 rounded-full w-5/6" />
-          <div className="h-3 bg-white/20 rounded-full w-full mt-2" />
-          <div className="h-3 bg-white/20 rounded-full w-4/5" />
+        <div className="h-3 bg-[#D8EDE3] rounded-full w-48 mb-4" />
+        <div className="bg-white rounded-3xl p-7 space-y-3 border border-[#EDE8E0]">
+          <div className="h-6 bg-[#F0EBE3] rounded-full w-5/6" />
+          <div className="h-6 bg-[#F0EBE3] rounded-full w-4/5" />
+          <div className="h-4 bg-[#F5F2EE] rounded-full w-full mt-1" />
+          <div className="h-4 bg-[#F5F2EE] rounded-full w-4/5" />
+          <div className="h-4 bg-[#F5F2EE] rounded-full w-full" />
         </div>
       </div>
       <div>
-        <div className="h-3.5 bg-[#E8DFD3] rounded-full w-56 mb-3" />
-        <div className="bg-white border-2 border-[#E8DFD3] rounded-2xl p-5 space-y-2">
-          <div className="h-4 bg-[#F0EBE3] rounded-full w-4/5" />
-          <div className="h-3 bg-[#F0EBE3] rounded-full w-3/5" />
+        <div className="h-3 bg-[#F5D5C8] rounded-full w-52 mb-4" />
+        <div className="bg-white rounded-3xl p-7 space-y-2.5 border border-[#EDE8E0]">
+          <div className="h-5 bg-[#F0EBE3] rounded-full w-4/5" />
+          <div className="h-4 bg-[#F5F2EE] rounded-full w-3/5" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-5">
         {[0, 1].map(i => (
           <div key={i}>
-            <div className="h-3.5 bg-[#E8DFD3] rounded-full w-40 mb-3" />
-            <div className="bg-white border border-[#E8DFD3] rounded-2xl p-5 space-y-2">
-              <div className="h-4 bg-[#F0EBE3] rounded-full w-3/4" />
-              <div className="h-3 bg-[#F0EBE3] rounded-full w-full" />
-              <div className="h-3 bg-[#F0EBE3] rounded-full w-4/5" />
+            <div className="h-3 bg-[#D8EDE3] rounded-full w-36 mb-4" />
+            <div className="bg-white rounded-3xl p-6 space-y-2.5 border border-[#EDE8E0]">
+              <div className="h-5 bg-[#F0EBE3] rounded-full w-3/4" />
+              <div className="h-4 bg-[#F5F2EE] rounded-full w-full" />
+              <div className="h-4 bg-[#F5F2EE] rounded-full w-4/5" />
             </div>
           </div>
         ))}
@@ -434,11 +442,11 @@ export default function ResultsPage() {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
 
-        {/* Outcome dot */}
+        {/* Outcome indicator */}
         {cfg && (
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-8">
             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
-            <span className={`text-xs font-semibold uppercase tracking-widest ${cfg.text}`}>
+            <span className={`text-[11px] font-medium uppercase tracking-[0.15em] ${cfg.text}`}>
               {cfg.label}
             </span>
           </div>
@@ -467,7 +475,7 @@ export default function ResultsPage() {
             )}
 
             {c && !coachingLoading && (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <DiagnosisCard coaching={c} />
                 <NextMoveCard coaching={c} />
                 <PatternAndNextLevelCards coaching={c} />
