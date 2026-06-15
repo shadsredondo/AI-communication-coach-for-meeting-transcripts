@@ -65,19 +65,29 @@ function HeroAvatar() {
 
 // ─── Persona sidebar ───────────────────────────────────────────────────────────
 
-function PersonaSidebar({ coaching }: { coaching: CoachingOutput }) {
+function PersonaSidebar() {
   const profile = getProfile()
   const currentArchetype = profile?.communicationChallenge
     ? getCurrentArchetype(profile.communicationChallenge)
-    : null
-  const heroArchetype = profile?.goal
-    ? getHeroArchetype(profile.goal)
     : null
 
   return (
     <div className="flex flex-col gap-3">
 
-      {/* Profile context */}
+      {/* Current persona — avatar first */}
+      {currentArchetype && (
+        <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl px-4 pt-5 pb-5 flex flex-col items-center text-center">
+          <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-3">
+            Current you
+          </p>
+          <CurrentAvatar />
+          <p className="text-[13px] font-bold text-[#1C1510] leading-snug mt-3">
+            {currentArchetype}
+          </p>
+        </div>
+      )}
+
+      {/* Profile context — goal + challenge only */}
       {(profile?.goal || profile?.communicationChallenge) && (
         <div className="bg-white border border-[#E8DFD3] rounded-2xl px-4 py-4">
           {profile.goal && (
@@ -98,24 +108,6 @@ function PersonaSidebar({ coaching }: { coaching: CoachingOutput }) {
               </p>
             </div>
           )}
-          {coaching.profile_check && (
-            <p className="text-xs text-[#78716C] leading-relaxed mt-3 pt-3 border-t border-[#F0EBE3] italic">
-              {coaching.profile_check}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Current persona only */}
-      {currentArchetype && (
-        <div className="bg-[#F5F1EB] border border-[#DDD5C8] rounded-2xl px-4 pt-5 pb-5 flex flex-col items-center text-center">
-          <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-widest mb-3">
-            Current you
-          </p>
-          <CurrentAvatar />
-          <p className="text-[13px] font-bold text-[#1C1510] leading-snug mt-3">
-            {currentArchetype}
-          </p>
         </div>
       )}
     </div>
@@ -430,7 +422,7 @@ export default function ResultsPage() {
 
       {/* Nav */}
       <nav className="bg-[#FAF7F2] border-b border-[#E8DFD3] px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
             <ArrowLeft size={15} />
             All sessions
@@ -440,7 +432,7 @@ export default function ResultsPage() {
         </div>
       </nav>
 
-      <main className="max-w-5xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8">
 
         {/* Outcome dot */}
         {cfg && (
@@ -457,7 +449,7 @@ export default function ResultsPage() {
 
           {/* ── Left: current persona (sticky) ── */}
           <div className="lg:sticky lg:top-[73px] lg:self-start">
-            {c && <PersonaSidebar coaching={c} />}
+            <PersonaSidebar />
           </div>
 
           {/* ── Center: coaching questions ── */}
