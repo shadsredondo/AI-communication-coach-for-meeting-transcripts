@@ -108,8 +108,8 @@ function PersonaSidebar({ coaching }: { coaching?: CoachingOutput }) {
     ? getCurrentArchetype(profile.communicationChallenge)
     : null
 
-  const goalText = coaching?.goal_narrative ?? profile?.goal
-  const challengeText = coaching?.challenge_narrative ?? profile?.communicationChallenge
+  const goalText = profile?.goal
+  const challengeText = profile?.communicationChallenge
 
   return (
     <div className="flex flex-col gap-3">
@@ -459,9 +459,7 @@ export default function ResultsPage() {
 
   useEffect(() => {
     if (!session) return
-    const hasNewSchema = session.coachingOutput
-      && 'diagnosis' in session.coachingOutput
-      && 'goal_narrative' in session.coachingOutput
+    const hasNewSchema = session.coachingOutput && 'diagnosis' in session.coachingOutput
     if (!hasNewSchema) fetchCoaching(session)
   }, [session, fetchCoaching])
 
