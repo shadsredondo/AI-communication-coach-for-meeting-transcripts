@@ -63,13 +63,53 @@ function HeroAvatar() {
   )
 }
 
+// ─── Sidebar icons ─────────────────────────────────────────────────────────────
+
+function GoalIcon() {
+  return (
+    <div className="w-14 h-14 rounded-full bg-[#E8F4EE] flex items-center justify-center mb-3">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="#3D7A5E" strokeWidth="1.5"/>
+        <circle cx="12" cy="12" r="4.5" stroke="#3D7A5E" strokeWidth="1.5"/>
+        <path d="M14.5 9.5 L11 13 L9.5 11.5" stroke="#3D7A5E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
+  )
+}
+
+function ChallengeIcon() {
+  return (
+    <div className="w-14 h-14 rounded-full bg-[#FDF0E8] flex items-center justify-center mb-3">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+        <path d="M12 3 L4 19 H20 Z" stroke="#C96442" strokeWidth="1.5" strokeLinejoin="round"/>
+        <path d="M12 8 L12 13" stroke="#C96442" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M12 9 L15 6" stroke="#C96442" strokeWidth="1.5" strokeLinecap="round"/>
+        <rect x="11.25" y="15.5" width="1.5" height="1.5" rx=".75" fill="#C96442"/>
+      </svg>
+    </div>
+  )
+}
+
+function RememberIcon() {
+  return (
+    <div className="w-14 h-14 rounded-full bg-[#EEE8F8] flex items-center justify-center mb-3">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2 L14.09 8.26 L21 9.27 L16 14.14 L17.18 21.02 L12 17.77 L6.82 21.02 L8 14.14 L3 9.27 L9.91 8.26 Z" fill="#7C5CBF" stroke="#7C5CBF" strokeWidth="1" strokeLinejoin="round"/>
+      </svg>
+    </div>
+  )
+}
+
 // ─── Persona sidebar ───────────────────────────────────────────────────────────
 
-function PersonaSidebar() {
+function PersonaSidebar({ coaching }: { coaching?: CoachingOutput }) {
   const profile = getProfile()
   const currentArchetype = profile?.communicationChallenge
     ? getCurrentArchetype(profile.communicationChallenge)
     : null
+
+  const goalText = coaching?.goal_narrative ?? profile?.goal
+  const challengeText = coaching?.challenge_narrative ?? profile?.communicationChallenge
 
   return (
     <div className="flex flex-col gap-3">
@@ -88,24 +128,35 @@ function PersonaSidebar() {
       )}
 
       {/* Goal */}
-      {profile?.goal && (
-        <div className="bg-white rounded-3xl px-4 py-4 shadow-sm border border-[#EDE8E0]">
-          <p className="text-[9px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-1.5">
+      {goalText && (
+        <div className="bg-white rounded-3xl px-4 pt-5 pb-5 flex flex-col items-center text-center shadow-sm border border-[#EDE8E0]">
+          <p className="text-[9px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-3">
             You were working on
           </p>
-          <p className="text-sm font-semibold text-[#1C1510] leading-snug">{profile.goal}</p>
+          <GoalIcon />
+          <p className="text-sm font-bold text-[#1C1510] leading-snug">{goalText}</p>
         </div>
       )}
 
       {/* Challenge */}
-      {profile?.communicationChallenge && (
-        <div className="bg-white rounded-3xl px-4 py-4 shadow-sm border border-[#EDE8E0]">
-          <p className="text-[9px] font-semibold text-[#C96442] uppercase tracking-[0.15em] mb-1.5">
+      {challengeText && (
+        <div className="bg-white rounded-3xl px-4 pt-5 pb-5 flex flex-col items-center text-center shadow-sm border border-[#EDE8E0]">
+          <p className="text-[9px] font-semibold text-[#C96442] uppercase tracking-[0.15em] mb-3">
             Biggest challenge
           </p>
-          <p className="text-sm font-semibold text-[#1C1510] leading-snug">
-            {profile.communicationChallenge}
+          <ChallengeIcon />
+          <p className="text-sm font-bold text-[#1C1510] leading-snug">{challengeText}</p>
+        </div>
+      )}
+
+      {/* Remember */}
+      {coaching?.remember && (
+        <div className="bg-[#F5F0FC] rounded-3xl px-4 pt-5 pb-5 flex flex-col items-center text-center shadow-sm border border-[#E2D8F5]">
+          <p className="text-[9px] font-semibold text-[#7C5CBF] uppercase tracking-[0.15em] mb-3">
+            Remember
           </p>
+          <RememberIcon />
+          <p className="text-sm font-bold text-[#3D2A6B] leading-snug">{coaching.remember}</p>
         </div>
       )}
     </div>
@@ -408,7 +459,9 @@ export default function ResultsPage() {
 
   useEffect(() => {
     if (!session) return
-    const hasNewSchema = session.coachingOutput && 'diagnosis' in session.coachingOutput
+    const hasNewSchema = session.coachingOutput
+      && 'diagnosis' in session.coachingOutput
+      && 'goal_narrative' in session.coachingOutput
     if (!hasNewSchema) fetchCoaching(session)
   }, [session, fetchCoaching])
 
@@ -457,7 +510,7 @@ export default function ResultsPage() {
 
           {/* ── Left: current persona (sticky) ── */}
           <div className="lg:sticky lg:top-[73px] lg:self-start">
-            <PersonaSidebar />
+            <PersonaSidebar coaching={c} />
           </div>
 
           {/* ── Center: coaching questions ── */}

@@ -119,6 +119,9 @@ export interface Session {
 
 export interface CoachingOutput {
   goal_outcome: 'strong' | 'partial' | 'off_track'
+  goal_narrative: string
+  challenge_narrative: string
+  remember?: string
   profile_check?: string
   personas?: {
     current: { archetype: string; traits: string[] }

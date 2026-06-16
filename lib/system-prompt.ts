@@ -133,6 +133,12 @@ Single valid JSON object. No text before or after it.
 {
   "goal_outcome": "strong" | "partial" | "off_track",
 
+  "goal_narrative": "One sentence. Take the user's stated goal and sharpen it in the context of this specific meeting — not a restatement, but a more precise version of what working on that goal looked like here. Under 15 words.",
+
+  "challenge_narrative": "One sentence. Take the user's stated challenge and make it specific to how it showed up in this meeting. Under 15 words.",
+
+  "remember": "5–10 words. One memorable principle the user can carry into their next meeting, distilled from the diagnosis. A compass point, not a conclusion. Return null if nothing genuinely memorable emerged.",
+
   "profile_check": "One sentence connecting (or contrasting) this meeting to the user's stated goal and challenge. Null if you cannot make the connection honestly.",
 
   "diagnosis": {
