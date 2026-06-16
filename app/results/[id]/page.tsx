@@ -189,11 +189,11 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
 
   return (
     <div>
-      <p className="text-[11px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-4">
-        Why did this meeting go the way it did?
+      <p className="text-[11px] font-semibold text-[#1F5C3E] uppercase tracking-[0.15em] mb-4">
+        Meeting summary
       </p>
       <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#EDE8E0]">
-        <div className="p-7">
+        <div className="p-7 border-l-4 border-[#1F5C3E] rounded-l-none">
           <p className="text-2xl font-bold text-[#1C1510] leading-snug mb-4">
             {coaching.diagnosis.headline}
           </p>
@@ -242,7 +242,7 @@ function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
   return (
     <div>
       <p className="text-[11px] font-semibold text-[#C96442] uppercase tracking-[0.15em] mb-4">
-        What should I do differently next time?
+        What to do differently next time
       </p>
       <div className="bg-white rounded-3xl p-7 shadow-sm border border-[#EDE8E0]">
         <div className="flex gap-4">
@@ -270,30 +270,54 @@ function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
 function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
   return (
     <div className="grid grid-cols-2 gap-5">
+      {/* Pattern — teal */}
       <div>
-        <p className="text-[11px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-4">
+        <p className="text-[11px] font-semibold text-[#2A7A8A] uppercase tracking-[0.15em] mb-4">
           What pattern keeps showing up?
         </p>
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#EDE8E0] h-full">
-          <p className="text-base font-bold text-[#1C1510] leading-snug mb-2.5">
-            {coaching.pattern.name}
-          </p>
-          <p className="text-[15px] text-[#6B6259] leading-relaxed">
-            {coaching.pattern.observation}
-          </p>
+          <div className="flex gap-4">
+            <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-[#E3F4F6] flex items-center justify-center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M17 2l4 4-4 4" stroke="#2A7A8A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M3 11V9a4 4 0 0 1 4-4h14" stroke="#2A7A8A" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M7 22l-4-4 4-4" stroke="#2A7A8A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M21 13v2a4 4 0 0 1-4 4H3" stroke="#2A7A8A" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <p className="text-base font-bold text-[#1C1510] leading-snug mb-2">
+                {coaching.pattern.name}
+              </p>
+              <p className="text-[15px] text-[#6B6259] leading-relaxed">
+                {coaching.pattern.observation}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Next level — slate blue */}
       <div>
-        <p className="text-[11px] font-semibold text-[#6B7E9F] uppercase tracking-[0.15em] mb-4">
+        <p className="text-[11px] font-semibold text-[#3D5FA0] uppercase tracking-[0.15em] mb-4">
           What would someone one level up do?
         </p>
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#EDE8E0] h-full">
-          <p className="text-base font-bold text-[#1C1510] leading-snug mb-2.5">
-            {coaching.next_level.capability}
-          </p>
-          <p className="text-[15px] text-[#6B6259] leading-relaxed">
-            {coaching.next_level.in_this_meeting}
-          </p>
+          <div className="flex gap-4">
+            <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-[#E8EFF8] flex items-center justify-center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 19V5M5 12l7-7 7 7" stroke="#3D5FA0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <p className="text-base font-bold text-[#1C1510] leading-snug mb-2">
+                {coaching.next_level.capability}
+              </p>
+              <p className="text-[15px] text-[#6B6259] leading-relaxed">
+                {coaching.next_level.in_this_meeting}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
