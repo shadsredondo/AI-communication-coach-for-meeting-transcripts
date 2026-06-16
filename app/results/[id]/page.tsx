@@ -116,7 +116,7 @@ function PersonaSidebar({ coaching }: { coaching?: CoachingOutput }) {
 
       {/* Current persona — avatar first */}
       {currentArchetype && (
-        <div className="bg-white rounded-3xl px-4 pt-6 pb-5 flex flex-col items-center text-center shadow-sm border border-[#EDE8E0]">
+        <div className="bg-white rounded-3xl px-4 pt-6 pb-5 flex flex-col items-center text-center shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9]">
           <p className="text-[9px] font-semibold text-[#B8A99A] uppercase tracking-[0.15em] mb-3">
             Current you
           </p>
@@ -129,7 +129,7 @@ function PersonaSidebar({ coaching }: { coaching?: CoachingOutput }) {
 
       {/* Goal */}
       {goalText && (
-        <div className="bg-white rounded-3xl px-4 pt-5 pb-5 flex flex-col items-center text-center shadow-sm border border-[#EDE8E0]">
+        <div className="bg-white rounded-3xl px-4 pt-5 pb-5 flex flex-col items-center text-center shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9]">
           <p className="text-[9px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-3">
             You were working on
           </p>
@@ -140,7 +140,7 @@ function PersonaSidebar({ coaching }: { coaching?: CoachingOutput }) {
 
       {/* Challenge */}
       {challengeText && (
-        <div className="bg-white rounded-3xl px-4 pt-5 pb-5 flex flex-col items-center text-center shadow-sm border border-[#EDE8E0]">
+        <div className="bg-white rounded-3xl px-4 pt-5 pb-5 flex flex-col items-center text-center shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9]">
           <p className="text-[9px] font-semibold text-[#C96442] uppercase tracking-[0.15em] mb-3">
             Biggest challenge
           </p>
@@ -151,7 +151,7 @@ function PersonaSidebar({ coaching }: { coaching?: CoachingOutput }) {
 
       {/* Remember */}
       {coaching?.remember && (
-        <div className="bg-[#F5F0FC] rounded-3xl px-4 pt-5 pb-5 flex flex-col items-center text-center shadow-sm border border-[#E2D8F5]">
+        <div className="bg-[#F5F0FC] rounded-3xl px-4 pt-5 pb-5 flex flex-col items-center text-center shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E2D8F5]">
           <p className="text-[9px] font-semibold text-[#7C5CBF] uppercase tracking-[0.15em] mb-3">
             Remember
           </p>
@@ -167,7 +167,7 @@ function PersonaSidebar({ coaching }: { coaching?: CoachingOutput }) {
 
 function FutureYouCard({ heroArchetype }: { heroArchetype: string }) {
   return (
-    <div className="bg-[#EEF4F0] rounded-3xl px-4 pt-6 pb-5 flex flex-col items-center text-center shadow-sm border border-[#D4E5DB]">
+    <div className="bg-[#EEF4F0] rounded-3xl px-4 pt-6 pb-5 flex flex-col items-center text-center shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#D4E5DB]">
       <p className="text-[9px] font-semibold text-[#3D7A5E] uppercase tracking-[0.15em] mb-3">
         Future you
       </p>
@@ -192,7 +192,7 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
       <p className="text-[11px] font-semibold text-[#1F5C3E] uppercase tracking-[0.15em] mb-4">
         Meeting summary
       </p>
-      <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#EDE8E0]">
+      <div className="bg-white rounded-3xl overflow-hidden shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9]">
         <div className="p-7 border-l-4 border-[#1F5C3E] rounded-l-none">
           <p className="text-2xl font-bold text-[#1C1510] leading-snug mb-4">
             {coaching.diagnosis.headline}
@@ -244,7 +244,7 @@ function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
       <p className="text-[11px] font-semibold text-[#C96442] uppercase tracking-[0.15em] mb-4">
         What to do differently next time
       </p>
-      <div className="bg-white rounded-3xl p-7 shadow-sm border border-[#EDE8E0]">
+      <div className="bg-white rounded-3xl p-7 shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9]">
         <div className="flex gap-4">
           <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-[#FFF0EB] flex items-center justify-center">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -275,7 +275,7 @@ function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
         <p className="text-[11px] font-semibold text-[#2A7A8A] uppercase tracking-[0.15em] mb-4">
           What pattern keeps showing up?
         </p>
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#EDE8E0] h-full">
+        <div className="bg-white rounded-3xl p-6 shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9] h-full">
           <div className="flex gap-4">
             <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-[#E3F4F6] flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -302,7 +302,7 @@ function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
         <p className="text-[11px] font-semibold text-[#3D5FA0] uppercase tracking-[0.15em] mb-4">
           What would someone one level up do?
         </p>
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#EDE8E0] h-full">
+        <div className="bg-white rounded-3xl p-6 shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9] h-full">
           <div className="flex gap-4">
             <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-[#E8EFF8] flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
