@@ -42,7 +42,7 @@ function JourneyHeader({
     <header>
       <Eyebrow>Your path</Eyebrow>
       {heroArchetype && (
-        <h1 className={`${serif} text-[40px] leading-[1.1] font-semibold text-[#1C1510] mb-4`}>
+        <h1 className={`${serif} text-[26px] leading-tight font-semibold text-[#1C1510] mb-4`}>
           Becoming {heroArchetype}
         </h1>
       )}
@@ -154,13 +154,13 @@ function NextLevelSection({
   )
 }
 
-// ─── Remember — the compass line ────────────────────────────────────────────────
+// ─── The insight — the one thing, leading the page ──────────────────────────────
 
-function RememberLine({ remember }: { remember: string }) {
+function InsightHero({ remember }: { remember: string }) {
   return (
-    <section className="text-center">
-      <Eyebrow>Carry this with you</Eyebrow>
-      <p className={`${serif} text-[28px] leading-snug font-semibold text-[#1C1510]`}>
+    <section className="mb-12">
+      <Eyebrow>Your takeaway</Eyebrow>
+      <p className={`${serif} text-[40px] leading-[1.1] font-semibold text-[#1C1510]`}>
         &ldquo;{remember}&rdquo;
       </p>
     </section>
@@ -350,6 +350,8 @@ export default function ResultsPage() {
 
       <main className="max-w-[640px] mx-auto px-6 pt-6 pb-24">
 
+        {c?.remember && !coachingLoading && <InsightHero remember={c.remember} />}
+
         <JourneyHeader
           currentArchetype={currentArchetype}
           heroArchetype={heroArchetype}
@@ -375,7 +377,6 @@ export default function ResultsPage() {
               {c.snapshot?.length > 0 && <SnapshotSection snapshot={c.snapshot} />}
               {c.snapshot?.length > 0 && <ActionsSection snapshot={c.snapshot} />}
               <NextLevelSection coaching={c} heroArchetype={heroArchetype} />
-              {c.remember && <RememberLine remember={c.remember} />}
               {!isSignedIn && <SaveProgressBanner session={session} />}
             </div>
           )}
