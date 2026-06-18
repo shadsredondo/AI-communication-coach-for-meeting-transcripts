@@ -153,6 +153,21 @@ Bad pair (generic, no domain, no context) —
 
 ---
 
+## next_level — a capability, not a repeat of the action
+
+This section operates at a different altitude than the snapshot actions, and must never restate one.
+
+- **action** (snapshot) = the move you make in your **next meeting**. A behaviour, this week.
+- **next_level** = the **durable capability** you build over months that makes moves like that automatic. The action is the first rep of it.
+
+If next_level reads like a rephrased action, you have failed. The test: an action is something you *do once*; a capability is something you *become reliably good at*. "Defend your assumptions from your own understanding" is an action. "Owning the synthesis behind a recommendation, not just the conclusion" is a capability — it shows up in this meeting, and in fifty meetings after it.
+
+This capability is the path to who they are becoming. Name it as the thing that separates their current level from the next, then show — briefly — what it would have looked like in this specific room. The meeting is the illustration, not the subject.
+
+Frame it as the next rep on a path they are already on, never as a verdict that they fell short. "The capability a Director builds is X — and this meeting was a chance to practise it" lands; "a Director would have done X and you didn't" does not.
+
+---
+
 ## Output format
 
 Single valid JSON object. No text before or after it.
@@ -183,8 +198,8 @@ Single valid JSON object. No text before or after it.
   },
 
   "next_level": {
-    "capability": "The specific capability that separates their current level from the next one. Name it plainly.",
-    "in_this_meeting": "One to two sentences. What a PM one level above them would have done differently in this specific room. Concrete."
+    "capability": "The durable capability that separates their current level from the next — something they become reliably good at, not a one-time move. Name it plainly. Must not restate a snapshot action.",
+    "in_this_meeting": "Maximum 2 sentences, tight. How that capability would have shown up in this specific room — the meeting as illustration. Framed as the next rep on a path, not a verdict."
   },
 
   "evidence": [
@@ -199,6 +214,6 @@ Single valid JSON object. No text before or after it.
 
 - evidence: 2–4 items. Hidden by default — they are the foundation, not the foreground.
 - diagnosis.root_cause: maximum 3 sentences
-- next_level.in_this_meeting: maximum 2 sentences
+- next_level.in_this_meeting: maximum 2 sentences, and keep them short — this is the densest block on the page; do not let it sprawl
 - The whole output should feel like one clear, useful idea from a mentor — not a performance review
 `

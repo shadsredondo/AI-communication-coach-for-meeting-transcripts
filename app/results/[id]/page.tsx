@@ -294,7 +294,7 @@ function ActionsCard({ snapshot }: { snapshot: CoachingOutput['snapshot'] }) {
 
 // ─── Q3 + Q4 ───────────────────────────────────────────────────────────────────
 
-function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
+function PatternAndNextLevelCards({ coaching, heroArchetype }: { coaching: CoachingOutput; heroArchetype: string | null }) {
   return (
     <div className="grid grid-cols-2 gap-5">
       {/* Pattern — teal */}
@@ -329,8 +329,8 @@ function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
         <p className="text-[11px] font-semibold text-[#3D5FA0] uppercase tracking-[0.15em] mb-4">
           What would someone one level up do?
         </p>
-        <div className="bg-white rounded-3xl p-6 shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9] h-full">
-          <div className="flex gap-4">
+        <div className="bg-white rounded-3xl p-6 shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9] h-full flex flex-col">
+          <div className="flex gap-4 flex-1">
             <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-[#E8EFF8] flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M12 19V5M5 12l7-7 7 7" stroke="#3D5FA0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -345,6 +345,18 @@ function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
               </p>
             </div>
           </div>
+          {heroArchetype && (
+            <div className="mt-5 pt-4 border-t border-[#F0EBE3] flex items-center gap-2">
+              <span className="text-[#3D7A5E]">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <p className="text-[13px] text-[#6B6259] leading-snug">
+                The path to <span className="font-bold text-[#1F5C3E]">{heroArchetype}</span>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -595,7 +607,7 @@ export default function ResultsPage() {
                 {c.snapshot?.length > 0 && <SnapshotCard snapshot={c.snapshot} />}
                 <DiagnosisCard coaching={c} />
                 {c.snapshot?.length > 0 && <ActionsCard snapshot={c.snapshot} />}
-                <PatternAndNextLevelCards coaching={c} />
+                <PatternAndNextLevelCards coaching={c} heroArchetype={heroArchetype} />
                 {!isSignedIn && <SaveProgressBanner session={session} />}
               </div>
             )}
