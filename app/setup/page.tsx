@@ -44,6 +44,17 @@ const GOAL_OPTIONS = [
   'Strengthen key relationships',
 ]
 
+const STRENGTH_OPTIONS = [
+  'Explaining complex ideas simply',
+  'Backing arguments with data',
+  'Reading the room',
+  'Staying calm under pressure',
+  'Building consensus across teams',
+  'Asking sharp questions',
+  'Telling a compelling story',
+  'Listening and synthesising',
+]
+
 // ─── Inference ────────────────────────────────────────────────────────────────
 
 function inferLevel(role: string): string {
@@ -107,6 +118,7 @@ export default function SetupPage() {
 
   // Step 2
   const [challenges, setChallenges] = useState<string[]>([])
+  const [strengths, setStrengths] = useState<string[]>([])
   const [goal, setGoal] = useState('')
 
   // Validation errors
@@ -147,6 +159,15 @@ export default function SetupPage() {
     setErrors(e => ({ ...e, challenges: '' }))
   }
 
+  function toggleStrength(s: string) {
+    setStrengths(prev => {
+      if (prev.includes(s)) return prev.filter(x => x !== s)
+      if (prev.length >= 2) return prev
+      return [...prev, s]
+    })
+    setErrors(e => ({ ...e, strengths: '' }))
+  }
+
   function validateStep1() {
     const e: Record<string, string> = {}
     if (!role.trim()) e.role = 'Tell us your role so we can personalise your coaching.'
@@ -157,6 +178,7 @@ export default function SetupPage() {
 
   function validateStep2() {
     const e: Record<string, string> = {}
+    if (strengths.length === 0) e.strengths = 'Pick at least one.'
     if (challenges.length === 0) e.challenges = 'Pick at least one.'
     if (!goal) e.goal = 'Pick one.'
     return e
@@ -181,6 +203,7 @@ export default function SetupPage() {
       companySize: '',
       workEnvironment: workEnv,
       communicationChallenge: challenges.join(', '),
+      strengths: strengths.join(', '),
       goal,
       growth_hypotheses: getHypothesesForGoal(goal),
     }
@@ -312,6 +335,25 @@ export default function SetupPage() {
               <p className="text-sm text-[#78716C] mb-10 leading-relaxed">
                 This tells Signal what to watch for and what to coach you on.
               </p>
+
+              {/* Strengths */}
+              <div className="mb-8">
+                <label className="text-sm font-semibold text-[#1C1510] block mb-1">
+                  What are you already good at?
+                </label>
+                <p className="text-xs text-[#78716C] mb-3">Pick up to two. Signal will remind you of these.</p>
+                <div className="flex flex-wrap gap-2">
+                  {STRENGTH_OPTIONS.map(s => (
+                    <Chip
+                      key={s}
+                      label={s}
+                      selected={strengths.includes(s)}
+                      onClick={() => toggleStrength(s)}
+                    />
+                  ))}
+                </div>
+                {errors.strengths && <p className="text-xs text-red-500 mt-2">{errors.strengths}</p>}
+              </div>
 
               {/* Challenge */}
               <div className="mb-8">

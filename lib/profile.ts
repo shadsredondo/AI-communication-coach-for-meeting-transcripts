@@ -13,6 +13,7 @@ export interface UserProfile {
   companySize: string
   workEnvironment: string
   communicationChallenge: string
+  strengths?: string
   goal: string
   growth_hypotheses?: GrowthHypothesis[]
 }
@@ -49,6 +50,7 @@ export async function saveProfileToSupabase(profile: UserProfile): Promise<void>
     company_size: profile.companySize,
     work_environment: profile.workEnvironment,
     communication_challenge: profile.communicationChallenge,
+    strengths: profile.strengths ?? null,
     goal: profile.goal,
     growth_hypotheses: profile.growth_hypotheses ?? null,
     updated_at: new Date().toISOString(),
