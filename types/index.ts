@@ -119,7 +119,10 @@ export interface Session {
 
 export interface CoachingOutput {
   goal_outcome: 'strong' | 'partial' | 'off_track'
-  snapshot: string[]
+  snapshot: Array<{
+    observation: string
+    action: string
+  }>
   remember?: string
   profile_check?: string
   personas?: {
@@ -130,10 +133,6 @@ export interface CoachingOutput {
     headline: string
     root_cause: string
     hypothesis_tags: string[]
-  }
-  next_move: {
-    action: string
-    why: string
   }
   pattern: {
     name: string

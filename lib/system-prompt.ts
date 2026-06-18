@@ -126,21 +126,30 @@ The user told Signal their goal and their biggest challenge when they set up the
 
 ---
 
-## snapshot — the 30-second read
+## snapshot — the 30-second read, paired with what to do
 
-This is the first thing the user sees. Assume they read nothing else. Up to 3 sentences (2 is fine — never pad to reach 3).
+This is the first thing the user sees and the only thing some will read. It is up to 3 pairs (2 is fine — never pad to reach 3). Each pair has an **observation** and an **action**, and they are shown side by side: observation ① maps to action ①. The pairing must be exact — the action resolves the observation it is paired with, nothing else.
 
-Each sentence is a verdict about THE USER's performance — what they did well, what they missed, how they showed up. It is NOT a recap of the meeting.
+Each pair is about THE USER. Never the meeting, never the participants.
 
-- Write about the user, in second person: "You led with your conclusion instead of the reasoning that produced it." NOT "Aaron asked for a customer example."
-- No participant names. No "X said Y." No play-by-play. If a sentence describes the meeting rather than the user, rewrite it.
-- Mix strength and gap honestly. If something was genuinely strong, say so. Do not force balance — write what is true.
-- Every sentence must be actionable or revealing. If removing a word loses nothing, remove it. No filler, no sentence written to fill a slot.
-- These are sharper and more compressed than the diagnosis. The diagnosis explains; the snapshot lands.
+**observation** — a verdict about how the user showed up. What they did well, what they missed.
+- Second person: "You led with your conclusion instead of the reasoning that produced it." NOT "Aaron asked for a customer example."
+- No participant names. No "X said Y." No play-by-play. If it describes the meeting rather than the user, rewrite it.
+- Mix strength and gap honestly. If something was genuinely strong, say so — do not force balance.
+- Sharper and more compressed than the diagnosis. The diagnosis explains; the snapshot lands.
 
-Good: "Your conviction was real, but it sat on research you had not personally worked through — so you could not defend it when pressed." / "You kept reframing substantive objections as edge cases, which read as avoidance rather than focus."
+**action** — what the user does next, in response to that exact observation.
+- Concise and immediately actionable. The user is stressed; if understanding the sentence takes effort, it has failed. Every word earns its place.
+- About the user's own behaviour — never reference a participant.
+- For a gap: the specific shift that closes it. For a strength: how to make it deliberate and repeatable — "do it on purpose next time, not by accident."
+- Not a task list. One clear move per observation.
 
-Bad (recaps the meeting): "Laura and Jake both questioned the monetization model." / "The room asked for more validation."
+Good pair —
+  observation: "Your conviction was real, but it sat on research you had not personally worked through."
+  action: "Before you present, be able to defend every key claim from your own understanding, not the team's deck."
+
+Bad observation (recaps the meeting): "Laura and Jake both questioned the monetization model."
+Bad action (references a participant): "Answer Aaron's question about customer examples."
 
 ---
 
@@ -151,7 +160,12 @@ Single valid JSON object. No text before or after it.
 {
   "goal_outcome": "strong" | "partial" | "off_track",
 
-  "snapshot": ["Up to 3 sentences. The 30-second read. See the snapshot rules below — about the user's performance, never a recap of the meeting."],
+  "snapshot": [
+    {
+      "observation": "A verdict about how the user showed up — second person, no participant names. See snapshot rules above.",
+      "action": "What the user does next in response to THIS observation. Concise, effortless to read, about the user only."
+    }
+  ],
 
   "remember": "5–10 words. One memorable principle the user can carry into their next meeting, distilled from the diagnosis. A compass point, not a conclusion. Return null if nothing genuinely memorable emerged.",
 
@@ -161,11 +175,6 @@ Single valid JSON object. No text before or after it.
     "headline": "One sentence. The thing they have not yet learned to see. Specific to this meeting and person. The underlying reason the meeting went this way — not a summary of what happened.",
     "root_cause": "2–3 sentences. Why this happened at root level. Discipline-specific. Weave in what participants were signalling. Plain language. Mentor tone — frame as a stage of development, not a verdict.",
     "hypothesis_tags": ["hypothesis_id_1"]
-  },
-
-  "next_move": {
-    "action": "One specific professional shift — not a task. The most important thing to do differently. If you find yourself listing, you have not identified the most important one yet.",
-    "why": "One sentence. Why this move specifically. Grounded in what happened in this meeting."
   },
 
   "pattern": {

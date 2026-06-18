@@ -184,7 +184,7 @@ function FutureYouCard({ heroArchetype }: { heroArchetype: string }) {
 
 // ─── Q1: Diagnosis card ────────────────────────────────────────────────────────
 
-function SnapshotCard({ snapshot }: { snapshot: string[] }) {
+function SnapshotCard({ snapshot }: { snapshot: CoachingOutput['snapshot'] }) {
   const items = snapshot.slice(0, 3)
   if (items.length === 0) return null
 
@@ -194,11 +194,15 @@ function SnapshotCard({ snapshot }: { snapshot: string[] }) {
         If you have 30 seconds
       </p>
       <div className="bg-[#FCF8EE] rounded-3xl p-7 shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#EDE2C8]">
-        <ul className="space-y-4">
+        <ul className="space-y-5">
           {items.map((item, i) => (
-            <li key={i} className="flex gap-3.5">
-              <span className="flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full bg-[#D9A441]" />
-              <p className="text-[17px] font-semibold text-[#1C1510] leading-snug">{item}</p>
+            <li key={i} className="flex gap-4">
+              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#D9A441] text-white text-sm font-bold flex items-center justify-center">
+                {i + 1}
+              </span>
+              <p className="text-[17px] font-semibold text-[#1C1510] leading-snug pt-0.5">
+                {item.observation}
+              </p>
             </li>
           ))}
         </ul>
@@ -259,30 +263,30 @@ function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
   )
 }
 
-// ─── Q2: Next move ─────────────────────────────────────────────────────────────
+// ─── Q2: What to do differently — actions mapped 1:1 to the snapshot ────────────
 
-function NextMoveCard({ coaching }: { coaching: CoachingOutput }) {
+function ActionsCard({ snapshot }: { snapshot: CoachingOutput['snapshot'] }) {
+  const items = snapshot.slice(0, 3)
+  if (items.length === 0) return null
+
   return (
     <div>
       <p className="text-[11px] font-semibold text-[#C96442] uppercase tracking-[0.15em] mb-4">
         What to do differently next time
       </p>
       <div className="bg-white rounded-3xl p-7 shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#E8E2D9]">
-        <div className="flex gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-[#FFF0EB] flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V17H9v-2.8C7.2 13.16 6 11.22 6 9a6 6 0 0 1 6-6z" stroke="#C96442" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-lg font-bold text-[#1C1510] leading-snug mb-2">
-              {coaching.next_move.action}
-            </p>
-            <p className="text-[15px] text-[#6B6259] leading-relaxed">
-              {coaching.next_move.why}
-            </p>
-          </div>
-        </div>
+        <ul className="space-y-5">
+          {items.map((item, i) => (
+            <li key={i} className="flex gap-4">
+              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#C96442] text-white text-sm font-bold flex items-center justify-center">
+                {i + 1}
+              </span>
+              <p className="text-[17px] font-semibold text-[#1C1510] leading-snug pt-0.5">
+                {item.action}
+              </p>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )
@@ -514,9 +518,13 @@ export default function ResultsPage() {
 
   useEffect(() => {
     if (!session) return
-    const hasNewSchema = session.coachingOutput
-      && 'diagnosis' in session.coachingOutput
-      && 'snapshot' in session.coachingOutput
+    const co = session.coachingOutput
+    const hasNewSchema = co
+      && 'diagnosis' in co
+      && Array.isArray(co.snapshot)
+      && co.snapshot.length > 0
+      && typeof co.snapshot[0] === 'object'
+      && 'action' in co.snapshot[0]
     if (!hasNewSchema) fetchCoaching(session)
   }, [session, fetchCoaching])
 
@@ -586,7 +594,7 @@ export default function ResultsPage() {
               <div className="space-y-8">
                 {c.snapshot?.length > 0 && <SnapshotCard snapshot={c.snapshot} />}
                 <DiagnosisCard coaching={c} />
-                <NextMoveCard coaching={c} />
+                {c.snapshot?.length > 0 && <ActionsCard snapshot={c.snapshot} />}
                 <PatternAndNextLevelCards coaching={c} />
                 {!isSignedIn && <SaveProgressBanner session={session} />}
               </div>
