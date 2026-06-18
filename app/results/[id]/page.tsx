@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ChevronDown } from 'lucide-react'
 import { getSession, saveSession, saveSessionToSupabase } from '@/lib/storage'
 import { getProfile, saveProfileToSupabase } from '@/lib/profile'
 import { getCurrentArchetype, getHeroArchetype } from '@/lib/personas'
@@ -13,6 +13,15 @@ import type { Session, CoachingOutput } from '@/types'
 
 const serif = 'font-[family-name:var(--font-fraunces)]'
 
+// Aesop-earthy tonal palette — narrow warm range, felt not jarring
+const TONES = {
+  base:    '#FAF7F2',
+  paper:   '#F7F2E9',
+  sand:    '#F4EEE3',
+  warm:    '#F7F3EC',
+  deep:    '#EEE6D8',
+} as const
+
 // ─── Section eyebrow ─────────────────────────────────────────────────────────────
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -20,6 +29,77 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
     <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A89A86] mb-5">
       {children}
     </p>
+  )
+}
+
+// ─── Reveal — fades + rises content as it scrolls into view ─────────────────────
+
+function Reveal({
+  children,
+  delay = 0,
+  className = '',
+}: {
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [shown, setShown] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) { setShown(true); obs.disconnect() }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-[700ms] ease-out ${shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'} ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// ─── Beat — a section that sets the page tone when it crosses the viewport ──────
+
+function Beat({
+  tone,
+  onActive,
+  children,
+  className = '',
+}: {
+  tone: string
+  onActive: (tone: string) => void
+  children: React.ReactNode
+  className?: string
+}) {
+  const ref = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) onActive(tone) },
+      { rootMargin: '-45% 0px -45% 0px' },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [tone, onActive])
+
+  return (
+    <section ref={ref} className={className}>
+      {children}
+    </section>
   )
 }
 
@@ -39,12 +119,12 @@ function JourneyHeader({
   if (!heroArchetype && !strengths && !challenge) return null
 
   return (
-    <header>
+    <Reveal>
       <Eyebrow>Your path</Eyebrow>
       {heroArchetype && (
-        <h1 className={`${serif} text-[26px] leading-tight font-semibold text-[#1C1510] mb-4`}>
+        <h2 className={`${serif} text-[26px] leading-tight font-semibold text-[#1C1510] mb-4`}>
           Becoming {heroArchetype}
-        </h1>
+        </h2>
       )}
       {currentArchetype && (
         <p className="text-[17px] text-[#6B6259] leading-relaxed mb-8">
@@ -54,7 +134,7 @@ function JourneyHeader({
       )}
 
       {(strengths || challenge) && (
-        <div className="flex flex-col sm:flex-row gap-x-12 gap-y-5 border-t border-[#EAE3D8] pt-7">
+        <div className="flex flex-col sm:flex-row gap-x-12 gap-y-5 border-t border-[#E2D9CA] pt-7">
           {strengths && (
             <div className="flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#3D7A5E] mb-2">
@@ -73,7 +153,7 @@ function JourneyHeader({
           )}
         </div>
       )}
-    </header>
+    </Reveal>
   )
 }
 
@@ -84,21 +164,23 @@ function SnapshotSection({ snapshot }: { snapshot: CoachingOutput['snapshot'] })
   if (items.length === 0) return null
 
   return (
-    <section>
-      <Eyebrow>This meeting, in 30 seconds</Eyebrow>
+    <div>
+      <Reveal><Eyebrow>This meeting, in 30 seconds</Eyebrow></Reveal>
       <ul className="space-y-7">
         {items.map((item, i) => (
-          <li key={i} className="flex gap-5">
-            <span className={`${serif} text-3xl text-[#C96442]/35 leading-none w-7 flex-shrink-0`}>
-              {i + 1}
-            </span>
-            <p className="text-[20px] text-[#1C1510] leading-snug font-medium pt-0.5">
-              {item.observation}
-            </p>
-          </li>
+          <Reveal key={i} delay={i * 120}>
+            <li className="flex gap-5">
+              <span className={`${serif} text-3xl text-[#C96442]/35 leading-none w-7 flex-shrink-0`}>
+                {i + 1}
+              </span>
+              <p className="text-[20px] text-[#1C1510] leading-snug font-medium pt-0.5">
+                {item.observation}
+              </p>
+            </li>
+          </Reveal>
         ))}
       </ul>
-    </section>
+    </div>
   )
 }
 
@@ -109,21 +191,23 @@ function ActionsSection({ snapshot }: { snapshot: CoachingOutput['snapshot'] }) 
   if (items.length === 0) return null
 
   return (
-    <section>
-      <Eyebrow>What to do differently next time</Eyebrow>
+    <div>
+      <Reveal><Eyebrow>What to do differently next time</Eyebrow></Reveal>
       <ul className="space-y-7">
         {items.map((item, i) => (
-          <li key={i} className="flex gap-5">
-            <span className={`${serif} text-3xl text-[#C96442]/35 leading-none w-7 flex-shrink-0`}>
-              {i + 1}
-            </span>
-            <p className="text-[18px] text-[#1C1510] leading-snug pt-1">
-              {item.action}
-            </p>
-          </li>
+          <Reveal key={i} delay={i * 120}>
+            <li className="flex gap-5">
+              <span className={`${serif} text-3xl text-[#C96442]/35 leading-none w-7 flex-shrink-0`}>
+                {i + 1}
+              </span>
+              <p className="text-[18px] text-[#1C1510] leading-snug pt-1">
+                {item.action}
+              </p>
+            </li>
+          </Reveal>
         ))}
       </ul>
-    </section>
+    </div>
   )
 }
 
@@ -137,33 +221,33 @@ function NextLevelSection({
   heroArchetype: string | null
 }) {
   return (
-    <section className="bg-[#F4EFE6] rounded-3xl p-8">
+    <Reveal>
       <Eyebrow>The capability you&rsquo;re building</Eyebrow>
-      <h2 className={`${serif} text-[26px] leading-tight font-semibold text-[#1C1510] mb-3`}>
+      <h2 className={`${serif} text-[28px] leading-tight font-semibold text-[#1C1510] mb-3`}>
         {coaching.next_level.capability}
       </h2>
       <p className="text-[16px] text-[#6B6259] leading-relaxed">
         {coaching.next_level.in_this_meeting}
       </p>
       {heroArchetype && (
-        <p className="text-[14px] text-[#3D7A5E] mt-6 pt-5 border-t border-[#E3DACB] font-medium">
+        <p className="text-[14px] text-[#3D7A5E] mt-6 pt-5 border-t border-[#E2D9CA] font-medium">
           This is the work that turns you into {heroArchetype}.
         </p>
       )}
-    </section>
+    </Reveal>
   )
 }
 
-// ─── The insight — the one thing, leading the page ──────────────────────────────
+// ─── The insight — the one thing, leading the page (full-height moment) ─────────
 
 function InsightHero({ remember }: { remember: string }) {
   return (
-    <section className="mb-12">
+    <Reveal>
       <Eyebrow>Your takeaway</Eyebrow>
-      <p className={`${serif} text-[40px] leading-[1.1] font-semibold text-[#1C1510]`}>
+      <p className={`${serif} text-[clamp(40px,6vw,56px)] leading-[1.08] font-semibold text-[#1C1510]`}>
         &ldquo;{remember}&rdquo;
       </p>
-    </section>
+    </Reveal>
   )
 }
 
@@ -259,6 +343,7 @@ export default function ResultsPage() {
   const [coachingLoading, setCoachingLoading] = useState(false)
   const [coachingError, setCoachingError] = useState<string | null>(null)
   const [isSignedIn, setIsSignedIn] = useState(false)
+  const [tone, setTone] = useState<string>(TONES.base)
 
   useEffect(() => {
     const id = params.id as string
@@ -334,12 +419,20 @@ export default function ResultsPage() {
     : null
   const heroArchetype = profile?.goal ? getHeroArchetype(profile.goal) : null
 
+  const col = 'max-w-[640px] mx-auto px-6'
+
   return (
-    <div className="min-h-screen bg-[#FAF7F2]">
+    <div className="min-h-screen relative">
+
+      {/* Adaptive tonal canvas — warms and cools as you scroll */}
+      <div
+        className="fixed inset-0 -z-10 transition-colors duration-[1200ms] ease-in-out"
+        style={{ backgroundColor: tone }}
+      />
 
       {/* Nav */}
       <nav className="px-6 py-5">
-        <div className="max-w-[640px] mx-auto flex items-center justify-between">
+        <div className={`${col} flex items-center justify-between !px-0`}>
           <Link href="/dashboard" className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
             <ArrowLeft size={15} />
             All sessions
@@ -348,40 +441,90 @@ export default function ResultsPage() {
         </div>
       </nav>
 
-      <main className="max-w-[640px] mx-auto px-6 pt-6 pb-24">
+      {/* Loading / error states */}
+      {coachingLoading && (
+        <main className={`${col} pt-16 pb-24`}>
+          <CoachingLoadingState />
+        </main>
+      )}
 
-        {c?.remember && !coachingLoading && <InsightHero remember={c.remember} />}
+      {coachingError && !coachingLoading && (
+        <main className={`${col} pt-16 pb-24`}>
+          <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
+            <p className="text-sm text-red-600 mb-3">{coachingError}</p>
+            <button type="button" onClick={() => fetchCoaching(session)}
+              className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+              Try again
+            </button>
+          </div>
+        </main>
+      )}
 
-        <JourneyHeader
-          currentArchetype={currentArchetype}
-          heroArchetype={heroArchetype}
-          strengths={profile?.strengths}
-          challenge={profile?.communicationChallenge}
-        />
-
-        <div className="mt-16">
-          {coachingLoading && <CoachingLoadingState />}
-
-          {coachingError && !coachingLoading && (
-            <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
-              <p className="text-sm text-red-600 mb-3">{coachingError}</p>
-              <button type="button" onClick={() => fetchCoaching(session)}
-                className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
-                Try again
-              </button>
-            </div>
+      {/* The paced reflection */}
+      {c && !coachingLoading && (
+        <>
+          {/* ── Immersive open: the takeaway, full height ── */}
+          {c.remember && (
+            <Beat tone={TONES.paper} onActive={setTone} className="min-h-[88vh] flex flex-col justify-center">
+              <div className={col}>
+                <InsightHero remember={c.remember} />
+              </div>
+              <Reveal delay={400} className="mt-16 flex justify-center">
+                <div className="flex flex-col items-center text-[#B8A99A]">
+                  <span className="text-[10px] uppercase tracking-[0.2em] mb-2">Read on</span>
+                  <ChevronDown size={18} className="animate-bounce" />
+                </div>
+              </Reveal>
+            </Beat>
           )}
 
-          {c && !coachingLoading && (
-            <div className="space-y-16">
-              {c.snapshot?.length > 0 && <SnapshotSection snapshot={c.snapshot} />}
-              {c.snapshot?.length > 0 && <ActionsSection snapshot={c.snapshot} />}
+          {/* ── The path ── */}
+          <Beat tone={TONES.base} onActive={setTone} className="min-h-[70vh] flex items-center py-20">
+            <div className={col + ' w-full'}>
+              <JourneyHeader
+                currentArchetype={currentArchetype}
+                heroArchetype={heroArchetype}
+                strengths={profile?.strengths}
+                challenge={profile?.communicationChallenge}
+              />
+            </div>
+          </Beat>
+
+          {/* ── This meeting in 30 seconds ── */}
+          {c.snapshot?.length > 0 && (
+            <Beat tone={TONES.sand} onActive={setTone} className="py-20">
+              <div className={col}>
+                <SnapshotSection snapshot={c.snapshot} />
+              </div>
+            </Beat>
+          )}
+
+          {/* ── What to do differently ── */}
+          {c.snapshot?.length > 0 && (
+            <Beat tone={TONES.warm} onActive={setTone} className="py-20">
+              <div className={col}>
+                <ActionsSection snapshot={c.snapshot} />
+              </div>
+            </Beat>
+          )}
+
+          {/* ── The capability you're building ── */}
+          <Beat tone={TONES.deep} onActive={setTone} className="py-20">
+            <div className={col}>
               <NextLevelSection coaching={c} heroArchetype={heroArchetype} />
-              {!isSignedIn && <SaveProgressBanner session={session} />}
             </div>
+          </Beat>
+
+          {/* ── Close ── */}
+          {!isSignedIn && (
+            <Beat tone={TONES.base} onActive={setTone} className="pt-8 pb-28">
+              <div className={col}>
+                <SaveProgressBanner session={session} />
+              </div>
+            </Beat>
           )}
-        </div>
-      </main>
+        </>
+      )}
     </div>
   )
 }
