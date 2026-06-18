@@ -87,6 +87,7 @@ ${profileSection}`
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
+      temperature: 0.4,
       system: SYSTEM_PROMPT || undefined,
       messages: [{ role: 'user', content: userMessage }],
     })
