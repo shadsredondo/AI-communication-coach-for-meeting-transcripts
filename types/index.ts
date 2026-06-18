@@ -119,6 +119,7 @@ export interface Session {
 
 export interface CoachingOutput {
   goal_outcome: 'strong' | 'partial' | 'off_track'
+  snapshot: string[]
   remember?: string
   profile_check?: string
   personas?: {

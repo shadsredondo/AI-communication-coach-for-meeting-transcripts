@@ -184,6 +184,29 @@ function FutureYouCard({ heroArchetype }: { heroArchetype: string }) {
 
 // ─── Q1: Diagnosis card ────────────────────────────────────────────────────────
 
+function SnapshotCard({ snapshot }: { snapshot: string[] }) {
+  const items = snapshot.slice(0, 3)
+  if (items.length === 0) return null
+
+  return (
+    <div>
+      <p className="text-[11px] font-semibold text-[#B07A1E] uppercase tracking-[0.15em] mb-4">
+        If you have 30 seconds
+      </p>
+      <div className="bg-[#FCF8EE] rounded-3xl p-7 shadow-[0_2px_16px_rgba(28,21,16,0.08)] border border-[#EDE2C8]">
+        <ul className="space-y-4">
+          {items.map((item, i) => (
+            <li key={i} className="flex gap-3.5">
+              <span className="flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full bg-[#D9A441]" />
+              <p className="text-[17px] font-semibold text-[#1C1510] leading-snug">{item}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function DiagnosisCard({ coaching }: { coaching: CoachingOutput }) {
   const [evidenceOpen, setEvidenceOpen] = useState(false)
 
@@ -329,6 +352,14 @@ function PatternAndNextLevelCards({ coaching }: { coaching: CoachingOutput }) {
 function CoachingLoadingState() {
   return (
     <div className="space-y-5 animate-pulse">
+      <div>
+        <div className="h-3 bg-[#EDE2C8] rounded-full w-40 mb-4" />
+        <div className="bg-[#FCF8EE] rounded-3xl p-7 space-y-4 border border-[#EDE2C8]">
+          <div className="h-5 bg-[#EFE6D0] rounded-full w-full" />
+          <div className="h-5 bg-[#EFE6D0] rounded-full w-11/12" />
+          <div className="h-5 bg-[#EFE6D0] rounded-full w-4/5" />
+        </div>
+      </div>
       <div>
         <div className="h-3 bg-[#D8EDE3] rounded-full w-48 mb-4" />
         <div className="bg-white rounded-3xl p-7 space-y-3 border border-[#EDE8E0]">
@@ -483,7 +514,9 @@ export default function ResultsPage() {
 
   useEffect(() => {
     if (!session) return
-    const hasNewSchema = session.coachingOutput && 'diagnosis' in session.coachingOutput
+    const hasNewSchema = session.coachingOutput
+      && 'diagnosis' in session.coachingOutput
+      && 'snapshot' in session.coachingOutput
     if (!hasNewSchema) fetchCoaching(session)
   }, [session, fetchCoaching])
 
@@ -551,6 +584,7 @@ export default function ResultsPage() {
 
             {c && !coachingLoading && (
               <div className="space-y-8">
+                {c.snapshot?.length > 0 && <SnapshotCard snapshot={c.snapshot} />}
                 <DiagnosisCard coaching={c} />
                 <NextMoveCard coaching={c} />
                 <PatternAndNextLevelCards coaching={c} />

@@ -126,12 +126,32 @@ The user told Signal their goal and their biggest challenge when they set up the
 
 ---
 
+## snapshot — the 30-second read
+
+This is the first thing the user sees. Assume they read nothing else. Up to 3 sentences (2 is fine — never pad to reach 3).
+
+Each sentence is a verdict about THE USER's performance — what they did well, what they missed, how they showed up. It is NOT a recap of the meeting.
+
+- Write about the user, in second person: "You led with your conclusion instead of the reasoning that produced it." NOT "Aaron asked for a customer example."
+- No participant names. No "X said Y." No play-by-play. If a sentence describes the meeting rather than the user, rewrite it.
+- Mix strength and gap honestly. If something was genuinely strong, say so. Do not force balance — write what is true.
+- Every sentence must be actionable or revealing. If removing a word loses nothing, remove it. No filler, no sentence written to fill a slot.
+- These are sharper and more compressed than the diagnosis. The diagnosis explains; the snapshot lands.
+
+Good: "Your conviction was real, but it sat on research you had not personally worked through — so you could not defend it when pressed." / "You kept reframing substantive objections as edge cases, which read as avoidance rather than focus."
+
+Bad (recaps the meeting): "Laura and Jake both questioned the monetization model." / "The room asked for more validation."
+
+---
+
 ## Output format
 
 Single valid JSON object. No text before or after it.
 
 {
   "goal_outcome": "strong" | "partial" | "off_track",
+
+  "snapshot": ["Up to 3 sentences. The 30-second read. See the snapshot rules below — about the user's performance, never a recap of the meeting."],
 
   "remember": "5–10 words. One memorable principle the user can carry into their next meeting, distilled from the diagnosis. A compass point, not a conclusion. Return null if nothing genuinely memorable emerged.",
 
