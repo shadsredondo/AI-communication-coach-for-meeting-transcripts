@@ -36,6 +36,10 @@ export function hasProfile(): boolean {
   return getProfile() !== null
 }
 
+export function clearProfile(): void {
+  localStorage.removeItem(PROFILE_KEY)
+}
+
 /** Load the signed-in user's profile from Supabase into localStorage. Returns it, or null. */
 export async function loadProfileFromSupabase(): Promise<UserProfile | null> {
   const { data: { user } } = await supabase.auth.getUser()

@@ -35,6 +35,10 @@ export function deleteSession(id: string): void {
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions))
 }
 
+export function clearSessions(): void {
+  localStorage.removeItem(SESSIONS_KEY)
+}
+
 export function getDraft(): DraftSession | null {
   if (typeof window === 'undefined') return null
   try {
