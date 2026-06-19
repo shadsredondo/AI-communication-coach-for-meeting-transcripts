@@ -58,12 +58,20 @@ export default function LandingPage() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-8 py-6 max-w-5xl mx-auto w-full">
         <span className="font-semibold text-lg tracking-tight text-[#1C1510]">Signal</span>
-        <Link
-          href="/dashboard"
-          className="text-sm text-[#78716C] hover:text-[#1C1510] transition-colors"
-        >
-          My sessions
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link
+            href="/dashboard"
+            className="text-sm text-[#78716C] hover:text-[#1C1510] transition-colors"
+          >
+            My sessions
+          </Link>
+          <Link
+            href="/auth"
+            className="text-sm font-medium text-[#1C1510] hover:text-[#C96442] transition-colors"
+          >
+            Sign in
+          </Link>
+        </div>
       </nav>
 
       {/* Hero */}
@@ -107,6 +115,14 @@ export default function LandingPage() {
             View past sessions
           </Link>
         </div>
+
+        {/* Returning user */}
+        <p className="text-sm text-[#78716C] mt-6 fade-in-3">
+          Already have an account?{' '}
+          <Link href="/auth" className="text-[#C96442] font-medium hover:underline">
+            Sign in
+          </Link>
+        </p>
       </main>
 
       {/* How it works */}
