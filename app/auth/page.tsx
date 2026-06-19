@@ -6,6 +6,14 @@ import { supabase } from '@/lib/supabase'
 import { hasProfile, loadProfileFromSupabase } from '@/lib/profile'
 import { loadSessionsFromSupabase } from '@/lib/storage'
 
+/** Resolve to null if the promise takes longer than ms — so sign-in can never hang. */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([
+    p,
+    new Promise<null>(resolve => setTimeout(() => resolve(null), ms)),
+  ])
+}
+
 /** Pull the user's profile + meetings down from their account into localStorage. */
 async function hydrateUserData(): Promise<boolean> {
   try {
@@ -32,7 +40,7 @@ export default function AuthPage() {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        const hasData = await hydrateUserData()
+        const hasData = (await withTimeout(hydrateUserData(), 6000)) ?? true
         router.replace(hasData ? '/new' : '/setup')
       }
     })
@@ -61,8 +69,9 @@ export default function AuthPage() {
       return
     }
 
-    // Pull their profile + past meetings down before deciding where to send them
-    const hasData = await hydrateUserData()
+    // Pull their profile + past meetings down before deciding where to send them.
+    // Capped at 6s so a slow/stalled load can never freeze sign-in; default to /new.
+    const hasData = (await withTimeout(hydrateUserData(), 6000)) ?? true
     router.push(hasData ? '/new' : '/setup')
   }
 
