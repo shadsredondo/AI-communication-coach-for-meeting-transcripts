@@ -385,6 +385,9 @@ export default function ResultsPage() {
       const updated: Session = { ...s, coachingOutput: coaching, goalScore }
       saveSession(updated)
       setSession(updated)
+      // Persist to the account too. No-op for anonymous users (no session);
+      // for signed-in users this is how meeting #2 onward reaches their account.
+      void saveSessionToSupabase(updated).catch(() => {})
     } catch {
       setCoachingError('Network error — please try again.')
     } finally {
