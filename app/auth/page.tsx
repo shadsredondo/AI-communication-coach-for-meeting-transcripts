@@ -3,7 +3,21 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { hasProfile } from '@/lib/profile'
+import { hasProfile, loadProfileFromSupabase } from '@/lib/profile'
+import { loadSessionsFromSupabase } from '@/lib/storage'
+
+/** Pull the user's profile + meetings down from their account into localStorage. */
+async function hydrateUserData(): Promise<boolean> {
+  try {
+    const [profile] = await Promise.all([
+      loadProfileFromSupabase(),
+      loadSessionsFromSupabase(),
+    ])
+    return !!profile || hasProfile()
+  } catch {
+    return hasProfile()
+  }
+}
 
 export default function AuthPage() {
   const router = useRouter()
@@ -14,11 +28,12 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // If already signed in, redirect
+  // If already signed in, hydrate their data then redirect
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        router.replace(hasProfile() ? '/new' : '/setup')
+        const hasData = await hydrateUserData()
+        router.replace(hasData ? '/new' : '/setup')
       }
     })
   }, [router])
@@ -46,7 +61,9 @@ export default function AuthPage() {
       return
     }
 
-    router.push(hasProfile() ? '/new' : '/setup')
+    // Pull their profile + past meetings down before deciding where to send them
+    const hasData = await hydrateUserData()
+    router.push(hasData ? '/new' : '/setup')
   }
 
   async function handleSignUp(e: React.FormEvent) {

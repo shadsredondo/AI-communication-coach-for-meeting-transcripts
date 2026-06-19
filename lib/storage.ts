@@ -52,6 +52,47 @@ export function clearDraft(): void {
   sessionStorage.removeItem(DRAFT_KEY)
 }
 
+/** Load the signed-in user's sessions from Supabase, merge with local, write to localStorage. */
+export async function loadSessionsFromSupabase(): Promise<Session[]> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return getSessions()
+
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error || !data) return getSessions()
+
+  const remote: Session[] = data.map(row => ({
+    id: row.id,
+    createdAt: row.created_at,
+    transcript: row.transcript ?? '',
+    transcriptFormat: row.transcript_format ?? 'raw',
+    userGoal: row.user_goal ?? undefined,
+    userTitle: row.user_title ?? '',
+    userFunction: row.user_function ?? '',
+    userSeniority: row.user_seniority ?? '',
+    meetingTitle: row.meeting_title ?? 'Meeting',
+    participants: row.participants ?? [],
+    meetingAnalysis: row.meeting_analysis ?? undefined,
+    deterministicAnalysis: row.deterministic_analysis ?? undefined,
+    coachingOutput: row.coaching_output ?? undefined,
+    goalScore: row.goal_score ?? 'yellow',
+  }))
+
+  // Keep any local-only sessions (e.g. one made just before signing in)
+  const remoteIds = new Set(remote.map(s => s.id))
+  const localOnly = getSessions().filter(s => !remoteIds.has(s.id))
+  const merged = [...remote, ...localOnly].sort((a, b) =>
+    a.createdAt < b.createdAt ? 1 : -1,
+  )
+
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(merged))
+  return merged
+}
+
 /** Save a session to Supabase (called when user signs up from results page) */
 export async function saveSessionToSupabase(session: Session): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser()

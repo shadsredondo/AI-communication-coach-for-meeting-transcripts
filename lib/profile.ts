@@ -36,6 +36,35 @@ export function hasProfile(): boolean {
   return getProfile() !== null
 }
 
+/** Load the signed-in user's profile from Supabase into localStorage. Returns it, or null. */
+export async function loadProfileFromSupabase(): Promise<UserProfile | null> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (error || !data) return null
+
+  const profile: UserProfile = {
+    name: data.name ?? '',
+    role: data.role ?? '',
+    seniority: data.seniority ?? '',
+    companyName: data.company_name ?? '',
+    companySize: data.company_size ?? '',
+    workEnvironment: data.work_environment ?? '',
+    communicationChallenge: data.communication_challenge ?? '',
+    strengths: data.strengths ?? undefined,
+    goal: data.goal ?? '',
+    growth_hypotheses: data.growth_hypotheses ?? undefined,
+  }
+  saveProfile(profile)
+  return profile
+}
+
 /** Save profile to Supabase (called after setup is complete) */
 export async function saveProfileToSupabase(profile: UserProfile): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser()
