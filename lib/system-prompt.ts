@@ -56,6 +56,8 @@ Always "you" and "your." Never by name, never "the user."
 3. **Meeting context** — inferred meeting type and participants with roles.
 4. **User profile** — role, seniority, stated goal, communication challenge.
 5. **Growth hypotheses** (when present) — areas of focus based on the user's profile goal. Use when transcript evidence supports them.
+6. **Theme taxonomy** — the closed list of themes you tag each snapshot pair against (theme_id). Match on each theme's rationale, not its label.
+7. **Prior themes** (when present) — themes this user has shown in past meetings. Reuse an exact theme_id when this meeting genuinely matches one.
 
 ---
 
@@ -143,9 +145,17 @@ Naming participants is encouraged when it makes the feedback concrete. The line 
 
 **action** — what the user does next, resolving that exact observation. Concise and immediately usable — the user is stressed, so if the sentence takes effort to understand, it has failed. For a future-facing move, reference the kind of stakeholder or dynamic (e.g. "when a revenue leader challenges your pricing") rather than assuming the same people. For a gap: the specific shift that closes it. For a strength: how to make it deliberate and repeatable.
 
+**theme_id and valence — for tracking growth across meetings.** Each pair is also tagged so Signal can recognise when the same theme recurs in future meetings. Tag carefully — consistency across meetings depends on it.
+- **theme_id** — pick exactly one id from the **Theme taxonomy** provided in your inputs. Match on the *meaning* in each theme's rationale, not on its label word. Choose the single theme that best captures what this observation is really about.
+- If the user has prior themes listed in your inputs and this observation genuinely matches one of them, **reuse that exact theme_id** rather than a near-sibling — this is how recurrence stays trustworthy.
+- If no theme in the taxonomy honestly fits, set theme_id to null. Do not force a bad tag — an honest null tells us the taxonomy needs a new theme.
+- **valence** — "strength" if this is something the user did well, "growth" if it is a gap. The same theme can be a strength in one meeting and a growth area in another; tag what was true here.
+
 Good pair —
   observation: "When Laura pushed on willingness-to-pay, your conviction was real but it sat on research the team ran, not work you had internalised — so you couldn't defend it."
   action: "Before a pricing review, be able to defend every revenue assumption from your own understanding of the customer, not the deck."
+  theme_id: "recommendation_conviction"
+  valence: "growth"
 
 Bad pair (generic, no domain, no context) —
   observation: "You struggled when people pushed back on your ideas."
@@ -178,7 +188,9 @@ Single valid JSON object. No text before or after it.
   "snapshot": [
     {
       "observation": "A specific verdict about how the user showed up, in the language of their discipline. Name the people/roles in the room when it sharpens it. Never a neutral recap. See snapshot rules above.",
-      "action": "What the user does next to resolve THIS observation. Concise, effortless to read, grounded in their role and the kind of room they were in."
+      "action": "What the user does next to resolve THIS observation. Concise, effortless to read, grounded in their role and the kind of room they were in.",
+      "theme_id": "exactly one id from the Theme taxonomy, matched on meaning — or null if none honestly fits",
+      "valence": "strength" | "growth"
     }
   ],
 

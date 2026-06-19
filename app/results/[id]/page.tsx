@@ -401,6 +401,7 @@ export default function ResultsPage() {
       && co.snapshot.length > 0
       && typeof co.snapshot[0] === 'object'
       && 'action' in co.snapshot[0]
+      && 'theme_id' in co.snapshot[0]
     if (!hasNewSchema) fetchCoaching(session)
   }, [session, fetchCoaching])
 

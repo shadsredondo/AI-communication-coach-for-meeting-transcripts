@@ -119,3 +119,15 @@ export function getHypothesesForGoal(goal: string): GrowthHypothesis[] {
   const ids = GOAL_HYPOTHESIS_MAP[goal] ?? DEFAULT_HYPOTHESES
   return ids.map(id => HYPOTHESES[id]).filter(Boolean)
 }
+
+// ─── Theme taxonomy — the closed list snapshot bullets are tagged against ───────
+
+/** Every theme in the taxonomy, for injecting into the prompt and validating tags. */
+export const ALL_HYPOTHESES: GrowthHypothesis[] = Object.values(HYPOTHESES)
+
+const VALID_THEME_IDS = new Set(Object.keys(HYPOTHESES))
+
+/** True if id is a real theme in the taxonomy. Used to reject off-list tags. */
+export function isValidThemeId(id: unknown): id is string {
+  return typeof id === 'string' && VALID_THEME_IDS.has(id)
+}

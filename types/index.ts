@@ -122,6 +122,8 @@ export interface CoachingOutput {
   snapshot: Array<{
     observation: string
     action: string
+    theme_id: string | null   // closed taxonomy id, or null when no clean fit
+    valence: 'strength' | 'growth'
   }>
   remember?: string
   profile_check?: string
