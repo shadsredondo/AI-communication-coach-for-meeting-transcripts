@@ -49,8 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function signOut() {
-    await supabase.auth.signOut()
-    // Wipe local data so accounts don't bleed into each other on a shared browser
+    // Local scope clears the session immediately without a server round-trip
+    // that can hang or fail and leave the button looking unresponsive.
+    try {
+      await supabase.auth.signOut({ scope: 'local' })
+    } catch {
+      // Clear local state regardless of what the server says
+    }
     clearSessions()
     clearProfile()
     clearStakeholders()
