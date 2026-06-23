@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, Plus, ChevronRight, Trash2, LogOut } from 'lucide-react'
-import { getSessions, deleteSession } from '@/lib/storage'
+import { getSessions, deleteSession, deleteSessionFromSupabase } from '@/lib/storage'
 import { formatDate } from '@/lib/utils'
 import { useAuth } from '@/components/auth-provider'
 import type { Session, GoalScore } from '@/types'
@@ -94,6 +94,8 @@ export default function DashboardPage() {
   function handleDelete(id: string) {
     deleteSession(id)
     setSessions(prev => prev.filter(s => s.id !== id))
+    // Also remove from the account so it doesn't re-hydrate on next sign-in.
+    void deleteSessionFromSupabase(id).catch(() => {})
   }
 
   const greenCount = sessions.filter(s => s.goalScore === 'green').length

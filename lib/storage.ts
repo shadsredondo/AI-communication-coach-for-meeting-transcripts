@@ -39,6 +39,13 @@ export function clearSessions(): void {
   localStorage.removeItem(SESSIONS_KEY)
 }
 
+/** Delete a session from the signed-in user's account. No-op for anonymous users. */
+export async function deleteSessionFromSupabase(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  await supabase.from('sessions').delete().eq('id', id).eq('user_id', user.id)
+}
+
 export function getDraft(): DraftSession | null {
   if (typeof window === 'undefined') return null
   try {
