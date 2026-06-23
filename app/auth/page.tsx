@@ -59,12 +59,23 @@ export default function AuthPage() {
     setLoading(true)
     setError('')
 
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+    // Cap the sign-in call itself so a stalled network/Supabase response can
+    // never leave the button spinning forever.
+    const result = await withTimeout(
+      supabase.auth.signInWithPassword({ email, password }),
+      12000,
+    )
 
-    if (err) {
-      setError(err.message === 'Invalid login credentials'
+    if (result === null) {
+      setError('Sign-in is taking too long — check your connection and try again.')
+      setLoading(false)
+      return
+    }
+
+    if (result.error) {
+      setError(result.error.message === 'Invalid login credentials'
         ? 'Wrong email or password. Try again.'
-        : err.message)
+        : result.error.message)
       setLoading(false)
       return
     }
