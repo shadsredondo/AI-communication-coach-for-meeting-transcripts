@@ -397,15 +397,11 @@ export default function ResultsPage() {
 
   useEffect(() => {
     if (!session) return
-    const co = session.coachingOutput
-    const hasNewSchema = co
-      && 'diagnosis' in co
-      && Array.isArray(co.snapshot)
-      && co.snapshot.length > 0
-      && typeof co.snapshot[0] === 'object'
-      && 'action' in co.snapshot[0]
-      && 'theme_id' in co.snapshot[0]
-    if (!hasNewSchema) fetchCoaching(session)
+    // Reports are immutable: generate coaching only the first time (when none
+    // exists). Never auto-regenerate because the saved shape looks old — that
+    // silently re-ran the AI (and re-billed) on every schema change. To refresh
+    // a report deliberately, use the manual "Regenerate" action.
+    if (!session.coachingOutput) fetchCoaching(session)
   }, [session, fetchCoaching])
 
   if (loading || !session) {
@@ -422,6 +418,14 @@ export default function ResultsPage() {
     ? getCurrentArchetype(profile.communicationChallenge)
     : null
   const heroArchetype = profile?.goal ? getHeroArchetype(profile.goal) : null
+
+  // Render defensively: an older report (saved before the current shape) may be
+  // missing pieces. Show what it has; never crash, never regenerate.
+  const hasPairs = !!c
+    && Array.isArray(c.snapshot)
+    && c.snapshot.length > 0
+    && typeof c.snapshot[0] === 'object'
+    && 'observation' in c.snapshot[0]
 
   const col = 'max-w-[640px] mx-auto px-6'
 
@@ -441,7 +445,22 @@ export default function ResultsPage() {
             <ArrowLeft size={15} />
             All sessions
           </Link>
-          <span className="text-xs text-[#B8A99A]">{formatDate(session.createdAt)}</span>
+          <div className="flex items-center gap-4">
+            {c && !coachingLoading && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('Regenerate this report? This runs a fresh AI analysis and may change the wording.')) {
+                    fetchCoaching(session)
+                  }
+                }}
+                className="text-xs text-[#B8A99A] hover:text-[#78716C] transition-colors"
+              >
+                Regenerate
+              </button>
+            )}
+            <span className="text-xs text-[#B8A99A]">{formatDate(session.createdAt)}</span>
+          </div>
         </div>
       </nav>
 
@@ -495,7 +514,7 @@ export default function ResultsPage() {
           </Beat>
 
           {/* ── This meeting in 30 seconds ── */}
-          {c.snapshot?.length > 0 && (
+          {hasPairs && (
             <Beat tone={TONES.sand} onActive={setTone} className="py-20">
               <div className={col}>
                 <SnapshotSection snapshot={c.snapshot} />
@@ -504,7 +523,7 @@ export default function ResultsPage() {
           )}
 
           {/* ── What to do differently ── */}
-          {c.snapshot?.length > 0 && (
+          {hasPairs && (
             <Beat tone={TONES.warm} onActive={setTone} className="py-20">
               <div className={col}>
                 <ActionsSection snapshot={c.snapshot} />
@@ -513,11 +532,13 @@ export default function ResultsPage() {
           )}
 
           {/* ── The capability you're building ── */}
-          <Beat tone={TONES.deep} onActive={setTone} className="py-20">
-            <div className={col}>
-              <NextLevelSection coaching={c} heroArchetype={heroArchetype} />
-            </div>
-          </Beat>
+          {c.next_level?.capability && (
+            <Beat tone={TONES.deep} onActive={setTone} className="py-20">
+              <div className={col}>
+                <NextLevelSection coaching={c} heroArchetype={heroArchetype} />
+              </div>
+            </Beat>
+          )}
 
           {/* ── Close ── */}
           {!isSignedIn && (
