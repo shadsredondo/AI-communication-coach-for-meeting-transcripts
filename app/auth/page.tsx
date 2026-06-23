@@ -41,7 +41,7 @@ export default function AuthPage() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
         const hasData = (await withTimeout(hydrateUserData(), 6000)) ?? true
-        router.replace(hasData ? '/new' : '/setup')
+        router.replace(hasData ? '/dashboard' : '/setup')
       }
     })
   }, [router])
@@ -81,9 +81,9 @@ export default function AuthPage() {
     }
 
     // Pull their profile + past meetings down before deciding where to send them.
-    // Capped at 6s so a slow/stalled load can never freeze sign-in; default to /new.
+    // Capped at 6s so a slow/stalled load can never freeze sign-in.
     const hasData = (await withTimeout(hydrateUserData(), 6000)) ?? true
-    router.push(hasData ? '/new' : '/setup')
+    router.push(hasData ? '/dashboard' : '/setup')
   }
 
   async function handleSignUp(e: React.FormEvent) {

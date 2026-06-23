@@ -3,77 +3,102 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Plus, ChevronRight, Trash2, LogOut } from 'lucide-react'
+import { Plus, LogOut, ArrowRight, ChevronRight } from 'lucide-react'
 import { getSessions, deleteSession, deleteSessionFromSupabase } from '@/lib/storage'
+import { getProfile } from '@/lib/profile'
+import { getCurrentArchetype, getHeroArchetype } from '@/lib/personas'
+import { computeGrowth, type GrowthSummary, type ThemePattern } from '@/lib/growth'
 import { formatDate } from '@/lib/utils'
 import { useAuth } from '@/components/auth-provider'
-import type { Session, GoalScore } from '@/types'
+import type { Session } from '@/types'
 
-function ScoreDot({ score }: { score: GoalScore }) {
-  const colors = { green: 'bg-emerald-500', yellow: 'bg-amber-400', red: 'bg-red-500' }
-  return <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${colors[score]}`} />
-}
+const serif = 'font-[family-name:var(--font-fraunces)]'
 
-function ScoreBadge({ score }: { score: GoalScore }) {
-  const config = {
-    green:  { style: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Strong' },
-    yellow: { style: 'bg-amber-50 text-amber-700 border-amber-200',       label: 'Partial' },
-    red:    { style: 'bg-red-50 text-red-700 border-red-200',             label: 'Off track' },
-  }[score]
+function Eyebrow({ children, color = '#A89A86' }: { children: React.ReactNode; color?: string }) {
   return (
-    <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${config.style}`}>
-      {config.label}
-    </span>
+    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-4" style={{ color }}>
+      {children}
+    </p>
   )
 }
 
-function SessionCard({ session, onDelete }: { session: Session; onDelete: () => void }) {
-  const otherParticipants = session.participants.filter(p => !p.isUser)
+// ─── The standout line up top ────────────────────────────────────────────────
 
+function standoutLine(g: GrowthSummary): string | null {
+  const h = g.headline
+  if (h) {
+    if (h.category === 'becoming_strength')
+      return `${h.label} is turning into a strength — it has come up across ${h.meetingCount} meetings, and you're shifting it.`
+    if (h.category === 'recurring_growth')
+      return `${h.label} keeps showing up across ${h.meetingCount} meetings — it's your current edge.`
+    return `${h.label} is a consistent strength — steady across ${h.meetingCount} meetings.`
+  }
+  const remember = (g.lastMeeting?.coachingOutput as { remember?: string } | undefined)?.remember
+  return remember ? `Last time: “${remember}”` : null
+}
+
+// ─── A growth lens (one of the three) ────────────────────────────────────────
+
+function Lens({
+  label,
+  color,
+  patterns,
+}: {
+  label: string
+  color: string
+  patterns: ThemePattern[]
+}) {
+  if (patterns.length === 0) return null
   return (
-    <div className="group bg-white rounded-2xl border border-[#E8DFD3] hover:border-[#C96442]/30 hover:shadow-sm transition-all duration-150">
-      <Link href={`/results/${session.id}`} className="block px-5 pt-5 pb-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <ScoreDot score={session.goalScore} />
-              <h3 className="text-sm font-semibold text-[#1C1510] truncate">{session.meetingTitle}</h3>
-            </div>
-            <p className="text-xs text-[#78716C] mb-3 truncate">{session.userGoal}</p>
-            <div className="flex items-center gap-3 flex-wrap">
-              <ScoreBadge score={session.goalScore} />
-              {otherParticipants.slice(0, 3).map(p => (
-                <span key={p.id} className="text-xs text-[#78716C]">
-                  {p.name}{p.role ? ` · ${p.role}` : ''}
-                </span>
-              ))}
-              {otherParticipants.length > 3 && (
-                <span className="text-xs text-[#B8A99A]">+{otherParticipants.length - 3} more</span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-xs text-[#B8A99A]">{formatDate(session.createdAt)}</span>
-            <ChevronRight size={14} className="text-[#E8DFD3] group-hover:text-[#C96442] transition-colors" />
-          </div>
-        </div>
-      </Link>
-      <div className="px-5 pb-4 flex justify-end border-t border-[#F0EBE3]">
-        <button
-          type="button"
-          onClick={e => {
-            e.preventDefault()
-            if (confirm('Delete this session?')) onDelete()
-          }}
-          className="text-xs text-[#B8A99A] hover:text-red-500 flex items-center gap-1 transition-colors mt-3"
-        >
-          <Trash2 size={11} />
-          Delete
-        </button>
-      </div>
+    <div>
+      <Eyebrow color={color}>{label}</Eyebrow>
+      <ul className="space-y-3">
+        {patterns.map(p => (
+          <li
+            key={p.themeId}
+            className="flex items-baseline justify-between gap-4 border-b border-[#EDE8E0] pb-3"
+          >
+            <span className="text-[17px] font-semibold text-[#1C1510] leading-snug">
+              {p.label}
+            </span>
+            <span className="text-xs text-[#A89A86] flex-shrink-0">
+              {p.meetingCount} meetings
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
+
+// ─── A meeting row in the list ───────────────────────────────────────────────
+
+function MeetingRow({ session, onDelete }: { session: Session; onDelete: () => void }) {
+  const others = session.participants.filter(p => !p.isUser)
+  return (
+    <div className="group flex items-center justify-between gap-4 border-b border-[#EDE8E0] py-4">
+      <Link href={`/results/${session.id}`} className="flex-1 min-w-0">
+        <p className="text-[15px] font-semibold text-[#1C1510] truncate group-hover:text-[#C96442] transition-colors">
+          {session.meetingTitle || 'Meeting'}
+        </p>
+        <p className="text-xs text-[#A89A86] truncate mt-0.5">
+          {formatDate(session.createdAt)}
+          {others.length > 0 && ` · ${others.map(p => p.name).join(', ')}`}
+        </p>
+      </Link>
+      <button
+        type="button"
+        onClick={() => { if (confirm('Delete this meeting?')) onDelete() }}
+        className="text-xs text-[#B8A99A] hover:text-red-500 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
+      >
+        Delete
+      </button>
+      <ChevronRight size={15} className="text-[#E8DFD3] flex-shrink-0" />
+    </div>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -94,23 +119,26 @@ export default function DashboardPage() {
   function handleDelete(id: string) {
     deleteSession(id)
     setSessions(prev => prev.filter(s => s.id !== id))
-    // Also remove from the account so it doesn't re-hydrate on next sign-in.
     void deleteSessionFromSupabase(id).catch(() => {})
   }
 
-  const greenCount = sessions.filter(s => s.goalScore === 'green').length
-  const yellowCount = sessions.filter(s => s.goalScore === 'yellow').length
-  const redCount = sessions.filter(s => s.goalScore === 'red').length
+  const profile = getProfile()
+  const firstName = profile?.name?.trim().split(' ')[0]
+  const heroArchetype = profile?.goal ? getHeroArchetype(profile.goal) : null
+  const currentArchetype = profile?.communicationChallenge
+    ? getCurrentArchetype(profile.communicationChallenge)
+    : null
+
+  const growth = computeGrowth(sessions)
+  const standout = standoutLine(growth)
 
   return (
     <div className="min-h-screen bg-[#FAF7F2]">
 
       {/* Nav */}
-      <nav className="bg-[#FAF7F2] border-b border-[#E8DFD3] px-6 py-4">
+      <nav className="px-6 py-5 border-b border-[#EDE8E0]">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-sm font-semibold text-[#1C1510]">
-            Signal
-          </Link>
+          <span className="text-sm font-semibold text-[#1C1510]">Signal</span>
           <div className="flex items-center gap-4">
             {user && (
               <button
@@ -124,80 +152,95 @@ export default function DashboardPage() {
             )}
             <Link
               href="/new"
-              className="flex items-center gap-1.5 text-sm font-medium bg-[#C96442] hover:bg-[#B85839] text-white px-4 py-2 rounded-lg transition-all shadow-sm shadow-[#C96442]/20"
+              className="flex items-center gap-1.5 text-sm font-medium bg-[#C96442] hover:bg-[#B85839] text-white px-4 py-2 rounded-xl transition-all"
             >
-              <Plus size={13} />
-              New session
+              <Plus size={14} />
+              New meeting
             </Link>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-3xl mx-auto px-6 py-10">
+      <main className="max-w-3xl mx-auto px-6 py-14">
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-[#1C1510] mb-1">My sessions</h1>
-          <p className="text-sm text-[#78716C]">Your coaching history across past conversations.</p>
-        </div>
+        {/* ── Welcome + your path ── */}
+        <header className="mb-16">
+          <Eyebrow color="#3D7A5E">Welcome back</Eyebrow>
+          <h1 className={`${serif} text-[40px] leading-[1.1] font-semibold text-[#1C1510] mb-4`}>
+            {firstName ? `Welcome back, ${firstName}` : 'Welcome back'}
+          </h1>
+          {heroArchetype && (
+            <p className="text-[17px] text-[#6B6259] leading-relaxed">
+              You&rsquo;re on your way to becoming{' '}
+              <span className="text-[#1C1510] font-medium">{heroArchetype}</span>
+              {currentArchetype && <> — from {currentArchetype}</>}.
+            </p>
+          )}
+          {standout && (
+            <p className="text-[17px] text-[#1C1510] leading-relaxed mt-4 pt-4 border-t border-[#EAE3D8]">
+              {standout}
+            </p>
+          )}
+        </header>
 
-        {/* Stats */}
-        {sessions.length > 0 && (
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-2xl border border-[#E8DFD3] p-4 text-center">
-              <div className="text-2xl font-bold text-[#1C1510] mb-1">{sessions.length}</div>
-              <div className="text-xs text-[#78716C]">Sessions analyzed</div>
-            </div>
-            <div className="bg-white rounded-2xl border border-[#E8DFD3] p-4 text-center">
-              <div className="flex items-center justify-center gap-1.5 mb-1">
-                <span className="text-2xl font-bold text-emerald-600">{greenCount}</span>
-                <span className="text-sm text-[#E8DFD3]">/</span>
-                <span className="text-lg font-semibold text-amber-500">{yellowCount}</span>
-                <span className="text-sm text-[#E8DFD3]">/</span>
-                <span className="text-lg font-semibold text-red-500">{redCount}</span>
-              </div>
-              <div className="text-xs text-[#78716C]">Strong / Partial / Off track</div>
-            </div>
-            <div className="bg-white rounded-2xl border border-[#E8DFD3] p-4 text-center">
-              <div className="text-2xl font-bold text-[#C96442] mb-1">
-                {Math.round((greenCount / sessions.length) * 100)}%
-              </div>
-              <div className="text-xs text-[#78716C]">Goal achievement rate</div>
-            </div>
-          </div>
-        )}
-
-        {/* Sessions */}
-        {!loaded ? (
-          <div className="flex justify-center py-20">
-            <div className="w-5 h-5 border-2 border-[#C96442] border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : sessions.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-14 h-14 rounded-2xl bg-[#C96442]/10 border border-[#C96442]/20 flex items-center justify-center mx-auto mb-4">
-              <ArrowRight size={20} className="text-[#C96442]" />
-            </div>
-            <h2 className="text-base font-semibold text-[#1C1510] mb-2">No sessions yet</h2>
-            <p className="text-sm text-[#78716C] mb-6 max-w-xs mx-auto">
-              Paste your first meeting transcript to get personalized coaching.
+        {/* ── Growth ── */}
+        {loaded && growth.totalMeetings === 0 ? (
+          <section className="mb-16 text-center bg-[#F4EFE6] rounded-3xl px-6 py-12">
+            <h2 className={`${serif} text-2xl font-semibold text-[#1C1510] mb-2`}>
+              Your growth starts with one meeting
+            </h2>
+            <p className="text-[15px] text-[#6B6259] mb-6 max-w-sm mx-auto leading-relaxed">
+              Bring in a conversation that mattered, and Signal will start tracking what you&rsquo;re building.
             </p>
             <Link
               href="/new"
-              className="inline-flex items-center gap-2 bg-[#C96442] hover:bg-[#B85839] text-white font-medium px-5 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-[#C96442]/20"
+              className="inline-flex items-center gap-2 bg-[#C96442] hover:bg-[#B85839] text-white font-medium px-6 py-3 rounded-xl text-sm transition-all"
             >
-              Try your first meeting
-              <ArrowRight size={14} />
+              Add your first meeting <ArrowRight size={15} />
             </Link>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {sessions.map(session => (
-              <SessionCard
-                key={session.id}
-                session={session}
-                onDelete={() => handleDelete(session.id)}
-              />
-            ))}
+          </section>
+        ) : growth.hasPatterns ? (
+          <section className="mb-16 space-y-12">
+            <Lens label="Becoming a strength" color="#1F5C3E" patterns={growth.becomingStrength} />
+            <Lens label="Keeps showing up" color="#C96442" patterns={growth.recurringGrowth} />
+            <Lens label="Your consistent strengths" color="#2A7A8A" patterns={growth.consistentStrengths} />
+          </section>
+        ) : growth.totalMeetings > 0 ? (
+          <section className="mb-16 bg-[#F4EFE6] rounded-3xl px-7 py-8">
+            <Eyebrow color="#B07A1E">Your patterns are forming</Eyebrow>
+            <p className="text-[16px] text-[#1C1510] leading-relaxed">
+              You&rsquo;re {growth.totalMeetings === 1 ? 'one meeting' : `${growth.totalMeetings} meetings`} in.
+              Add a couple more and Signal will start showing what keeps coming up and what&rsquo;s
+              turning into a strength.
+            </p>
+            <Link
+              href="/new"
+              className="inline-flex items-center gap-2 text-[#C96442] font-medium text-sm mt-5 hover:underline"
+            >
+              Add another meeting <ArrowRight size={14} />
+            </Link>
+          </section>
+        ) : null}
+
+        {/* ── Your meetings ── */}
+        {loaded && sessions.length > 0 && (
+          <section>
+            <Eyebrow>Your meetings</Eyebrow>
+            <div>
+              {sessions.map(session => (
+                <MeetingRow
+                  key={session.id}
+                  session={session}
+                  onDelete={() => handleDelete(session.id)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!loaded && (
+          <div className="flex justify-center py-20">
+            <div className="w-5 h-5 border-2 border-[#C96442] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </main>
