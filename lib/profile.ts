@@ -42,7 +42,8 @@ export function clearProfile(): void {
 
 /** Load the signed-in user's profile from Supabase into localStorage. Returns it, or null. */
 export async function loadProfileFromSupabase(): Promise<UserProfile | null> {
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
   if (!user) return null
 
   const { data, error } = await supabase

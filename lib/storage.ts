@@ -65,7 +65,8 @@ export function clearDraft(): void {
 
 /** Load the signed-in user's sessions from Supabase, merge with local, write to localStorage. */
 export async function loadSessionsFromSupabase(): Promise<Session[]> {
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
   if (!user) return getSessions()
 
   const { data, error } = await supabase

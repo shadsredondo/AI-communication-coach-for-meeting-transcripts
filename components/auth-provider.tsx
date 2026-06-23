@@ -37,11 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         const currentUser = session?.user ?? null
         setUser(currentUser)
-        if (currentUser) await hydrate()
         setLoading(false)
+        // Defer hydration OUT of this callback. Calling any supabase.auth.*
+        // method synchronously inside onAuthStateChange deadlocks the auth lock
+        // — which hangs signInWithPassword itself. setTimeout(0) lets the
+        // callback return and release the lock first.
+        if (currentUser) setTimeout(() => { void hydrate() }, 0)
       }
     )
 
