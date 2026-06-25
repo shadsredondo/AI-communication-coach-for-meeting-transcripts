@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { SYSTEM_PROMPT } from '@/lib/system-prompt'
+import { ALL_HYPOTHESES, isValidThemeId } from '@/lib/growth-hypotheses'
 import type { Participant, DeterministicAnalysis } from '@/types'
 import type { UserProfile } from '@/lib/profile'
 
@@ -20,7 +21,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       transcript,
-      userGoal,
       userTitle,
       userSeniority,
       meetingTitle,
@@ -29,7 +29,6 @@ export async function POST(request: NextRequest) {
       deterministicAnalysis,
     }: {
       transcript: string
-      userGoal: string
       userTitle: string
       userSeniority: string
       meetingTitle: string
@@ -40,9 +39,6 @@ export async function POST(request: NextRequest) {
 
     if (!transcript?.trim()) {
       return NextResponse.json({ error: 'Transcript is required and cannot be empty' }, { status: 400 })
-    }
-    if (!userGoal?.trim()) {
-      return NextResponse.json({ error: 'Meeting goal is required' }, { status: 400 })
     }
     if (!Array.isArray(participants) || participants.length === 0) {
       return NextResponse.json({ error: 'At least one participant is required' }, { status: 400 })
@@ -77,22 +73,28 @@ export async function POST(request: NextRequest) {
       ? `## Step 1 Observational Analysis\n${JSON.stringify(deterministicAnalysis, null, 2)}\n\n`
       : ''
 
+    const taxonomySection = `## Theme taxonomy
+Tag each snapshot pair with exactly one theme_id from this list (match on the rationale, not the label), or null if none honestly fits:
+${ALL_HYPOTHESES.map(h => `- ${h.id}: ${h.rationale}`).join('\n')}`
+
     const userMessage = `${deterministicSection}## Meeting transcript
 ${transcript}
 
 ## Meeting context
 Title: ${meetingTitle}
-Goal: ${userGoal}
 
 ## Participants
 ${participantList}
 
 ## Your profile
-${profileSection}`
+${profileSection}
+
+${taxonomySection}`
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
+      temperature: 0.4,
       system: SYSTEM_PROMPT || undefined,
       messages: [{ role: 'user', content: userMessage }],
     })
@@ -109,6 +111,15 @@ ${profileSection}`
       console.error('Failed to parse coaching response:', e)
       console.error('Raw coaching text:', textBlock.text)
       return NextResponse.json({ error: 'Failed to parse coaching output' }, { status: 500 })
+    }
+
+    // Guard the growth tags: reject off-list theme_ids, coerce bad valence.
+    if (Array.isArray(coaching?.snapshot)) {
+      coaching.snapshot = coaching.snapshot.map((item: Record<string, unknown>) => ({
+        ...item,
+        theme_id: isValidThemeId(item?.theme_id) ? item.theme_id : null,
+        valence: item?.valence === 'strength' || item?.valence === 'growth' ? item.valence : 'growth',
+      }))
     }
 
     return NextResponse.json(coaching)

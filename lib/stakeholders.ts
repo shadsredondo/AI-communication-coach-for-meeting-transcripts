@@ -15,6 +15,10 @@ export function getStakeholders(): KnownStakeholder[] {
   }
 }
 
+export function clearStakeholders(): void {
+  localStorage.removeItem(STAKEHOLDERS_KEY)
+}
+
 export function upsertStakeholders(participants: { name: string; role: string }[]): void {
   const existing = getStakeholders()
   const now = new Date().toISOString()

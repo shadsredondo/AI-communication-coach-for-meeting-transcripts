@@ -3,7 +3,29 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { hasProfile } from '@/lib/profile'
+import { hasProfile, loadProfileFromSupabase } from '@/lib/profile'
+import { loadSessionsFromSupabase } from '@/lib/storage'
+
+/** Resolve to null if the promise takes longer than ms — so sign-in can never hang. */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([
+    p,
+    new Promise<null>(resolve => setTimeout(() => resolve(null), ms)),
+  ])
+}
+
+/** Pull the user's profile + meetings down from their account into localStorage. */
+async function hydrateUserData(): Promise<boolean> {
+  try {
+    const [profile] = await Promise.all([
+      loadProfileFromSupabase(),
+      loadSessionsFromSupabase(),
+    ])
+    return !!profile || hasProfile()
+  } catch {
+    return hasProfile()
+  }
+}
 
 export default function AuthPage() {
   const router = useRouter()
@@ -14,11 +36,12 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // If already signed in, redirect
+  // If already signed in, hydrate their data then redirect
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        router.replace(hasProfile() ? '/new' : '/setup')
+        const hasData = (await withTimeout(hydrateUserData(), 6000)) ?? true
+        router.replace(hasData ? '/dashboard' : '/setup')
       }
     })
   }, [router])
@@ -36,17 +59,31 @@ export default function AuthPage() {
     setLoading(true)
     setError('')
 
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+    // Cap the sign-in call itself so a stalled network/Supabase response can
+    // never leave the button spinning forever.
+    const result = await withTimeout(
+      supabase.auth.signInWithPassword({ email, password }),
+      12000,
+    )
 
-    if (err) {
-      setError(err.message === 'Invalid login credentials'
-        ? 'Wrong email or password. Try again.'
-        : err.message)
+    if (result === null) {
+      setError('Sign-in is taking too long — check your connection and try again.')
       setLoading(false)
       return
     }
 
-    router.push(hasProfile() ? '/new' : '/setup')
+    if (result.error) {
+      setError(result.error.message === 'Invalid login credentials'
+        ? 'Wrong email or password. Try again.'
+        : result.error.message)
+      setLoading(false)
+      return
+    }
+
+    // Pull their profile + past meetings down before deciding where to send them.
+    // Capped at 6s so a slow/stalled load can never freeze sign-in.
+    const hasData = (await withTimeout(hydrateUserData(), 6000)) ?? true
+    router.push(hasData ? '/dashboard' : '/setup')
   }
 
   async function handleSignUp(e: React.FormEvent) {

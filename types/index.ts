@@ -63,7 +63,6 @@ export interface DraftSession {
   transcriptFormat: TranscriptFormat
   participants: Participant[]
   userTitle: string
-  userGoal: string
 }
 
 // Agent 1: Meeting Analyst output
@@ -106,7 +105,7 @@ export interface Session {
   createdAt: string
   transcript: string
   transcriptFormat: TranscriptFormat
-  userGoal: string
+  userGoal?: string
   userTitle: string
   userFunction: string
   userSeniority: string
@@ -118,22 +117,40 @@ export interface Session {
   goalScore: GoalScore
 }
 
-export interface CoachingSection {
-  id: 'strategic_communication' | 'tone_and_presence' | 'clarity'
-  one_line_summary: string
-  what_went_well: Array<{ point: string; evidence: string }>
-  what_could_be_stronger: Array<{ point: string; evidence: string }>
-  rewrite_suggestions?: Array<{ original: string; rewrite: string; why: string }>
-}
-
 export interface CoachingOutput {
   goal_outcome: 'strong' | 'partial' | 'off_track'
-  overall_summary: {
-    headline: string
-    what_landed: string[]
-    what_to_work_on?: string[]
-    next_moves: string[]
+  snapshot: Array<{
+    observation: string
+    action: string
+    theme_id: string | null   // closed taxonomy id, or null when no clean fit
+    valence: 'strength' | 'growth'
+  }>
+  remember?: string
+  profile_check?: string
+  personas?: {
+    current: { archetype: string; traits: string[] }
+    hero: { archetype: string; traits: string[] }
   }
-  sections: CoachingSection[]
-  next_steps: Array<{ action: string; timing: string }>
+  diagnosis: {
+    headline: string
+    root_cause: string
+    hypothesis_tags: string[]
+  }
+  pattern: {
+    name: string
+    observation: string
+  }
+  next_level: {
+    capability: string
+    in_this_meeting: string
+  }
+  evidence: Array<{
+    quote: string
+    reveals: string
+  }>
+  rewrites?: Array<{
+    original: string
+    rewrite: string
+    why: string
+  }>
 }

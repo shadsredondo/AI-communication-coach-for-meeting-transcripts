@@ -1,74 +1,36 @@
-# Signal
-AI Communication Coach for Meeting Transcripts
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Signal helps professionals reflect on meetings and improve how they communicate, influence, and navigate stakeholder dynamics.
+## Getting Started
 
-## The Problem
+First, run the development server:
 
-After important meetings, most people leave with uncertainty:
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-- Did I land my message?
-- Did I miss political signals?
-- Was my tone effective?
-- What should I say next?
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Existing tools summarize transcripts, but they rarely help people improve strategic communication.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## Product Hypothesis
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-Professionals want coaching, not summaries.
+## Learn More
 
-By combining meeting context, stakeholder dynamics, communication goals, and transcript analysis, Signal helps users reflect more strategically after meetings.
+To learn more about Next.js, take a look at the following resources:
 
-## Who This Is For
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-- Product leaders
-- Managers
-- Cross-functional stakeholders
-- Professionals navigating high-stakes communication
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## How It Works
+## Deploy on Vercel
 
-1. Upload a meeting transcript
-2. Add meeting context
-3. Signal analyzes:
-   - Communication effectiveness
-   - Stakeholder signals
-   - Strategic positioning
-   - Tone and clarity
-4. Receive personalized coaching and next-step recommendations
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-## Why I Built This
-
-As a product leader, I noticed that post-meeting reflection is often reactive and emotional rather than structured. I wanted to explore whether AI could act as a thoughtful communication coach — helping professionals improve influence, clarity, and presence over time.
-
-## Product Decisions & Tradeoffs
-
-### V1 Scope
-- Transcript upload first
-- No Zoom integration initially
-- Focus on actionable coaching over meeting summaries
-
-### Design Principles
-- Coaching > summarization
-- Structured feedback > generic AI advice
-- Context-aware analysis > transcript-only outputs
-
-## Tech Stack
-
-- Next.js
-- TypeScript
-- Claude API
-- Supabase
-- Vercel
-
-## Demo
-
-https://signal-puce-eight.vercel.app/
-
-## What’s Next
-
-- Zoom/Google Meet integrations
-- Meeting memory over time
-- Personalized communication patterns
-- Goal-based coaching
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

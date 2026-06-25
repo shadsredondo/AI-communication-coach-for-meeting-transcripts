@@ -27,17 +27,6 @@ const DEFAULT_DISPLAY_ROLES = [
   'VP of Engineering',
 ]
 
-const GOAL_SUGGESTIONS = [
-  'Gain approval',
-  'Influence a decision',
-  'Build trust',
-  'Align on roadmap',
-  'Resolve conflict',
-  'Present findings',
-  'Get buy-in',
-  'Strengthen a relationship',
-]
-
 const TRANSCRIPT_PLACEHOLDER = `Sarah: Good morning everyone. Thanks for joining the roadmap review.\n\nMark: Morning. I wanted to raise a concern about the Q3 timeline before we get started...\n\nYou: Absolutely, let's address that first. I've actually prepared some data on that.`
 
 function getInitials(name: string) {
@@ -159,7 +148,6 @@ export default function NewMeetingPage() {
   const router = useRouter()
   const [transcript, setTranscript] = useState('')
   const [participants, setParticipants] = useState<Participant[]>([])
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([])
   const [userTitle, setUserTitle] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -220,7 +208,6 @@ export default function NewMeetingPage() {
     const e: Record<string, string> = {}
     if (!transcript.trim()) e.transcript = 'Paste your transcript to get started.'
     if (participants.filter(p => p.name.trim()).length === 0) e.participants = 'Add at least one participant.'
-    if (selectedGoals.length === 0) e.goal = 'Pick at least one goal.'
     if (!userTitle.trim()) e.userTitle = 'Your title helps us frame the coaching.'
     return e
   }
@@ -236,7 +223,6 @@ export default function NewMeetingPage() {
       transcript: transcript.trim(),
       transcriptFormat: format,
       participants: filledParticipants,
-      userGoal: selectedGoals.join(', '),
       userTitle: userTitle.trim(),
     })
 
@@ -299,48 +285,8 @@ export default function NewMeetingPage() {
 
         <div className="border-t border-[#E8DFD3] mb-10" />
 
-        {/* Goal */}
-        <div className="mb-10 fade-in-2">
-          <h2 className="text-base font-semibold text-[#1C1510] mb-1">
-            What did you want from this meeting?
-          </h2>
-          <p className="text-sm text-[#78716C] mb-5">
-            Be specific — this shapes your entire coaching report.
-          </p>
-
-          <div className="flex flex-wrap gap-2">
-            {GOAL_SUGGESTIONS.map(suggestion => {
-              const active = selectedGoals.includes(suggestion)
-              return (
-                <button
-                  key={suggestion}
-                  type="button"
-                  onClick={() => {
-                    setSelectedGoals(prev =>
-                      active ? prev.filter(g => g !== suggestion) : [...prev, suggestion]
-                    )
-                    if (errors.goal) setErrors(prev => ({ ...prev, goal: '' }))
-                  }}
-                  className={`px-3.5 py-2 text-sm rounded-full border transition-all ${
-                    active
-                      ? 'bg-[#C96442] text-white border-[#C96442] shadow-sm shadow-[#C96442]/20'
-                      : 'bg-white text-[#78716C] border-[#E8DFD3] hover:border-[#C96442]/40 hover:text-[#C96442]'
-                  }`}
-                >
-                  {suggestion}
-                </button>
-              )
-            })}
-          </div>
-          {errors.goal && (
-            <p className="text-xs text-red-500 mt-3">{errors.goal}</p>
-          )}
-        </div>
-
-        <div className="border-t border-[#E8DFD3] mb-10" />
-
         {/* Participants */}
-        <div className="mb-10 fade-in-3">
+        <div className="mb-10 fade-in-2">
           <h2 className="text-base font-semibold text-[#1C1510] mb-1">Who was in the room?</h2>
           <p className="text-sm text-[#78716C] mb-5">
             {transcript.trim()
@@ -386,7 +332,7 @@ export default function NewMeetingPage() {
         <div className="border-t border-[#E8DFD3] mb-10" />
 
         {/* Your title */}
-        <div className="mb-10 fade-in-4">
+        <div className="mb-10 fade-in-3">
           <h2 className="text-base font-semibold text-[#1C1510] mb-1">Your title</h2>
           <p className="text-sm text-[#78716C] mb-4">
             Helps us frame the coaching from your perspective.
@@ -411,7 +357,7 @@ export default function NewMeetingPage() {
         </div>
 
         {/* CTA */}
-        <div className="fade-in-4">
+        <div className="fade-in-3">
           <button
             onClick={handleGenerate}
             className="w-full inline-flex items-center justify-center gap-2 bg-[#C96442] hover:bg-[#B85839] text-white font-medium px-6 py-4 rounded-xl transition-all duration-150 text-sm shadow-lg shadow-[#C96442]/20"

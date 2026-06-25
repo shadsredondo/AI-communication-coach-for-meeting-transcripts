@@ -1,9 +1,12 @@
 import { Session, DraftSession } from '@/types'
 import { upsertStakeholders } from '@/lib/stakeholders'
+import { clearProfile } from '@/lib/profile'
+import { clearStakeholders } from '@/lib/stakeholders'
 import { supabase } from '@/lib/supabase'
 
 const SESSIONS_KEY = 'signal_sessions'
 const DRAFT_KEY = 'signal_draft'
+const LAST_USER_KEY = 'signal_last_user'
 
 export function getSessions(): Session[] {
   if (typeof window === 'undefined') return []
@@ -35,6 +38,17 @@ export function deleteSession(id: string): void {
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions))
 }
 
+export function clearSessions(): void {
+  localStorage.removeItem(SESSIONS_KEY)
+}
+
+/** Delete a session from the signed-in user's account. No-op for anonymous users. */
+export async function deleteSessionFromSupabase(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  await supabase.from('sessions').delete().eq('id', id).eq('user_id', user.id)
+}
+
 export function getDraft(): DraftSession | null {
   if (typeof window === 'undefined') return null
   try {
@@ -50,6 +64,66 @@ export function saveDraft(data: DraftSession): void {
 
 export function clearDraft(): void {
   sessionStorage.removeItem(DRAFT_KEY)
+}
+
+/** Load the signed-in user's sessions from Supabase, merge with local, write to localStorage. */
+export async function loadSessionsFromSupabase(): Promise<Session[]> {
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
+  if (!user) return getSessions()
+
+  // If a *different* user is signing in on this browser, the local data
+  // belongs to a previous (or anonymous) session — don't merge or upload it
+  // into this account. First sign-in / same user keeps local data, so a trial
+  // meeting made just before signing up is still claimed.
+  const lastUser = typeof window !== 'undefined' ? localStorage.getItem(LAST_USER_KEY) : null
+  if (lastUser && lastUser !== user.id) {
+    clearSessions()
+    clearProfile()
+    clearStakeholders()
+    clearDraft()
+  }
+  if (typeof window !== 'undefined') localStorage.setItem(LAST_USER_KEY, user.id)
+
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error || !data) return getSessions()
+
+  const remote: Session[] = data.map(row => ({
+    id: row.id,
+    createdAt: row.created_at,
+    transcript: row.transcript ?? '',
+    transcriptFormat: row.transcript_format ?? 'raw',
+    userGoal: row.user_goal ?? undefined,
+    userTitle: row.user_title ?? '',
+    userFunction: row.user_function ?? '',
+    userSeniority: row.user_seniority ?? '',
+    meetingTitle: row.meeting_title ?? 'Meeting',
+    participants: row.participants ?? [],
+    meetingAnalysis: row.meeting_analysis ?? undefined,
+    deterministicAnalysis: row.deterministic_analysis ?? undefined,
+    coachingOutput: row.coaching_output ?? undefined,
+    goalScore: row.goal_score ?? 'yellow',
+  }))
+
+  // Keep any local-only sessions (e.g. one made just before signing in) and
+  // push them up to the account, so they survive sign-out and reach other
+  // devices instead of living only in this browser's localStorage.
+  const remoteIds = new Set(remote.map(s => s.id))
+  const localOnly = getSessions().filter(s => !remoteIds.has(s.id))
+  await Promise.all(
+    localOnly.map(s => saveSessionToSupabase(s).catch(() => {})),
+  )
+  const merged = [...remote, ...localOnly].sort((a, b) =>
+    a.createdAt < b.createdAt ? 1 : -1,
+  )
+
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(merged))
+  return merged
 }
 
 /** Save a session to Supabase (called when user signs up from results page) */

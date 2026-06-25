@@ -13,6 +13,7 @@ export interface UserProfile {
   companySize: string
   workEnvironment: string
   communicationChallenge: string
+  strengths?: string
   goal: string
   growth_hypotheses?: GrowthHypothesis[]
 }
@@ -35,6 +36,52 @@ export function hasProfile(): boolean {
   return getProfile() !== null
 }
 
+export function clearProfile(): void {
+  localStorage.removeItem(PROFILE_KEY)
+}
+
+/** Load the signed-in user's profile from Supabase into localStorage. Returns it, or null. */
+export async function loadProfileFromSupabase(): Promise<UserProfile | null> {
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
+  if (!user) return null
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (error || !data) return null
+
+  const profile: UserProfile = {
+    name: data.name ?? '',
+    role: data.role ?? '',
+    seniority: data.seniority ?? '',
+    companyName: data.company_name ?? '',
+    companySize: data.company_size ?? '',
+    workEnvironment: data.work_environment ?? '',
+    communicationChallenge: data.communication_challenge ?? '',
+    strengths: data.strengths ?? undefined,
+    goal: data.goal ?? '',
+    growth_hypotheses: data.growth_hypotheses ?? undefined,
+  }
+
+  // One-time backfill: accounts created before the name was written to the
+  // profile have an empty name, but it still lives in auth metadata from
+  // signup. Pull it across so the dashboard greeting works for them too.
+  if (!profile.name.trim()) {
+    const metaName = (user.user_metadata?.name as string | undefined)?.trim()
+    if (metaName) {
+      profile.name = metaName
+      await saveProfileToSupabase(profile)
+    }
+  }
+
+  saveProfile(profile)
+  return profile
+}
+
 /** Save profile to Supabase (called after setup is complete) */
 export async function saveProfileToSupabase(profile: UserProfile): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser()
@@ -49,6 +96,7 @@ export async function saveProfileToSupabase(profile: UserProfile): Promise<void>
     company_size: profile.companySize,
     work_environment: profile.workEnvironment,
     communication_challenge: profile.communicationChallenge,
+    strengths: profile.strengths ?? null,
     goal: profile.goal,
     growth_hypotheses: profile.growth_hypotheses ?? null,
     updated_at: new Date().toISOString(),

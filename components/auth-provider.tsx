@@ -3,7 +3,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { saveProfile } from '@/lib/profile'
+import { loadProfileFromSupabase, clearProfile } from '@/lib/profile'
+import { loadSessionsFromSupabase, clearSessions, clearDraft } from '@/lib/storage'
+import { clearStakeholders } from '@/lib/stakeholders'
 
 interface AuthContextType {
   user: User | null
@@ -17,25 +19,9 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 })
 
-async function syncProfileFromSupabase(userId: string) {
-  const { data } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single()
-
-  if (data) {
-    saveProfile({
-      name: data.name,
-      role: data.role,
-      seniority: data.seniority,
-      companyName: data.company_name,
-      companySize: data.company_size,
-      workEnvironment: data.work_environment,
-      communicationChallenge: data.communication_challenge,
-      goal: data.goal,
-    })
-  }
+/** Pull the signed-in user's profile + meetings down into localStorage. */
+async function hydrate() {
+  await Promise.all([loadProfileFromSupabase(), loadSessionsFromSupabase()])
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -46,16 +32,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       const currentUser = session?.user ?? null
       setUser(currentUser)
-      if (currentUser) await syncProfileFromSupabase(currentUser.id)
+      if (currentUser) await hydrate()
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         const currentUser = session?.user ?? null
         setUser(currentUser)
-        if (currentUser) await syncProfileFromSupabase(currentUser.id)
         setLoading(false)
+        // Defer hydration OUT of this callback. Calling any supabase.auth.*
+        // method synchronously inside onAuthStateChange deadlocks the auth lock
+        // — which hangs signInWithPassword itself. setTimeout(0) lets the
+        // callback return and release the lock first.
+        if (currentUser) setTimeout(() => { void hydrate() }, 0)
       }
     )
 
@@ -63,7 +53,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function signOut() {
-    await supabase.auth.signOut()
+    // Local scope clears the session immediately without a server round-trip
+    // that can hang or fail and leave the button looking unresponsive.
+    try {
+      await supabase.auth.signOut({ scope: 'local' })
+    } catch {
+      // Clear local state regardless of what the server says
+    }
+    clearSessions()
+    clearProfile()
+    clearStakeholders()
+    clearDraft()
     setUser(null)
   }
 
