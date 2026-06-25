@@ -102,14 +102,18 @@ function MeetingRow({ session, onDelete }: { session: Session; onDelete: () => v
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, signOut } = useAuth()
+  const { user, loading, signOut } = useAuth()
   const [sessions, setSessions] = useState<Session[]>([])
   const [loaded, setLoaded] = useState(false)
 
+  // Re-read once auth settles: the AuthProvider hydrates localStorage from
+  // Supabase asynchronously, so reading only on mount can miss that write
+  // (e.g. on a direct load or refresh of /dashboard).
   useEffect(() => {
+    if (loading) return
     setSessions(getSessions())
     setLoaded(true)
-  }, [])
+  }, [loading, user])
 
   async function handleSignOut() {
     await signOut()

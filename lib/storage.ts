@@ -1,9 +1,12 @@
 import { Session, DraftSession } from '@/types'
 import { upsertStakeholders } from '@/lib/stakeholders'
+import { clearProfile } from '@/lib/profile'
+import { clearStakeholders } from '@/lib/stakeholders'
 import { supabase } from '@/lib/supabase'
 
 const SESSIONS_KEY = 'signal_sessions'
 const DRAFT_KEY = 'signal_draft'
+const LAST_USER_KEY = 'signal_last_user'
 
 export function getSessions(): Session[] {
   if (typeof window === 'undefined') return []
@@ -69,6 +72,19 @@ export async function loadSessionsFromSupabase(): Promise<Session[]> {
   const user = session?.user
   if (!user) return getSessions()
 
+  // If a *different* user is signing in on this browser, the local data
+  // belongs to a previous (or anonymous) session — don't merge or upload it
+  // into this account. First sign-in / same user keeps local data, so a trial
+  // meeting made just before signing up is still claimed.
+  const lastUser = typeof window !== 'undefined' ? localStorage.getItem(LAST_USER_KEY) : null
+  if (lastUser && lastUser !== user.id) {
+    clearSessions()
+    clearProfile()
+    clearStakeholders()
+    clearDraft()
+  }
+  if (typeof window !== 'undefined') localStorage.setItem(LAST_USER_KEY, user.id)
+
   const { data, error } = await supabase
     .from('sessions')
     .select('*')
@@ -94,9 +110,14 @@ export async function loadSessionsFromSupabase(): Promise<Session[]> {
     goalScore: row.goal_score ?? 'yellow',
   }))
 
-  // Keep any local-only sessions (e.g. one made just before signing in)
+  // Keep any local-only sessions (e.g. one made just before signing in) and
+  // push them up to the account, so they survive sign-out and reach other
+  // devices instead of living only in this browser's localStorage.
   const remoteIds = new Set(remote.map(s => s.id))
   const localOnly = getSessions().filter(s => !remoteIds.has(s.id))
+  await Promise.all(
+    localOnly.map(s => saveSessionToSupabase(s).catch(() => {})),
+  )
   const merged = [...remote, ...localOnly].sort((a, b) =>
     a.createdAt < b.createdAt ? 1 : -1,
   )

@@ -1,5 +1,5 @@
 import type { Session } from '@/types'
-import { ALL_HYPOTHESES } from '@/lib/growth-hypotheses'
+import { ALL_HYPOTHESES, isValidThemeId } from '@/lib/growth-hypotheses'
 
 // theme_id → human label, from the taxonomy
 const LABELS: Record<string, string> = Object.fromEntries(
@@ -39,6 +39,7 @@ export interface GrowthSummary {
 
 interface TaggedCoaching {
   snapshot?: Array<{ theme_id: string | null; valence?: Valence }>
+  diagnosis?: { hypothesis_tags?: string[] }
   remember?: string
 }
 
@@ -53,7 +54,8 @@ export function computeGrowth(sessions: Session[]): GrowthSummary {
 
   const byTheme = new Map<string, Instance[]>()
   for (const s of withCoaching) {
-    const snap = (s.coachingOutput as TaggedCoaching).snapshot ?? []
+    const co = s.coachingOutput as TaggedCoaching
+    const snap = co.snapshot ?? []
     const seenThisMeeting = new Set<string>()
     for (const item of snap) {
       if (!item?.theme_id) continue
@@ -63,6 +65,21 @@ export function computeGrowth(sessions: Session[]): GrowthSummary {
       const arr = byTheme.get(item.theme_id) ?? []
       arr.push({ valence: item.valence, at: s.createdAt, sessionId: s.id })
       byTheme.set(item.theme_id, arr)
+    }
+
+    // Backfill: reports generated before snapshot theme-tagging have no
+    // theme_id, but they carry diagnosis.hypothesis_tags from the same
+    // taxonomy. Treat those as growth-area signals so historical meetings
+    // still feed cross-meeting patterns — no regeneration, no AI call.
+    if (seenThisMeeting.size === 0) {
+      for (const tag of co.diagnosis?.hypothesis_tags ?? []) {
+        if (!isValidThemeId(tag)) continue
+        if (seenThisMeeting.has(tag)) continue
+        seenThisMeeting.add(tag)
+        const arr = byTheme.get(tag) ?? []
+        arr.push({ valence: 'growth', at: s.createdAt, sessionId: s.id })
+        byTheme.set(tag, arr)
+      }
     }
   }
 

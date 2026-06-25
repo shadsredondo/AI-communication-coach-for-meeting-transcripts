@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ChevronDown } from 'lucide-react'
 import { getSession, saveSession, saveSessionToSupabase } from '@/lib/storage'
-import { getProfile, saveProfileToSupabase } from '@/lib/profile'
+import { getProfile, saveProfile, saveProfileToSupabase } from '@/lib/profile'
 import { getCurrentArchetype, getHeroArchetype } from '@/lib/personas'
 import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
@@ -277,6 +277,7 @@ function CoachingLoadingState() {
 // ─── Save progress banner ──────────────────────────────────────────────────────
 
 function SaveProgressBanner({ session }: { session: Session }) {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -285,15 +286,25 @@ function SaveProgressBanner({ session }: { session: Session }) {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!email.trim() || !password.trim()) { setError('Please fill in both fields.'); return }
+    if (!name.trim() || !email.trim() || !password.trim()) { setError('Please fill in all fields.'); return }
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
     setLoading(true)
     setError('')
-    const { error: signUpError } = await supabase.auth.signUp({ email, password })
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name: name.trim() } },
+    })
     if (signUpError) { setError(signUpError.message); setLoading(false); return }
     await saveSessionToSupabase(session)
+    // Stamp the name onto the (already-created) profile so the dashboard
+    // greeting works for this anonymous-trial-then-save path too.
     const profile = getProfile()
-    if (profile) await saveProfileToSupabase(profile)
+    if (profile) {
+      const named = { ...profile, name: name.trim() }
+      saveProfile(named)
+      await saveProfileToSupabase(named)
+    }
     setSaved(true)
   }
 
@@ -313,6 +324,9 @@ function SaveProgressBanner({ session }: { session: Session }) {
         Create a free account — every report is saved, so your path builds over time.
       </p>
       <form onSubmit={handleSave} className="space-y-2.5">
+        <input type="text" placeholder="Your name" value={name}
+          onChange={e => { setName(e.target.value); setError('') }}
+          className="w-full rounded-xl border border-[#E8DFD3] bg-white px-3.5 py-2.5 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
         <input type="email" placeholder="Email" value={email}
           onChange={e => { setEmail(e.target.value); setError('') }}
           className="w-full rounded-xl border border-[#E8DFD3] bg-white px-3.5 py-2.5 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />

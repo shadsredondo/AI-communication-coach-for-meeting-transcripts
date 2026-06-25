@@ -66,6 +66,18 @@ export async function loadProfileFromSupabase(): Promise<UserProfile | null> {
     goal: data.goal ?? '',
     growth_hypotheses: data.growth_hypotheses ?? undefined,
   }
+
+  // One-time backfill: accounts created before the name was written to the
+  // profile have an empty name, but it still lives in auth metadata from
+  // signup. Pull it across so the dashboard greeting works for them too.
+  if (!profile.name.trim()) {
+    const metaName = (user.user_metadata?.name as string | undefined)?.trim()
+    if (metaName) {
+      profile.name = metaName
+      await saveProfileToSupabase(profile)
+    }
+  }
+
   saveProfile(profile)
   return profile
 }

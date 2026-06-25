@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { saveProfile, saveProfileToSupabase, hasProfile } from '@/lib/profile'
 import { getHypothesesForGoal } from '@/lib/growth-hypotheses'
+import { supabase } from '@/lib/supabase'
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 
@@ -195,8 +196,13 @@ export default function SetupPage() {
     const e = validateStep2()
     if (Object.keys(e).length > 0) { setErrors(e); return }
 
+    // Pull the name captured at signup (stored in auth metadata) into the
+    // profile, so the dashboard greeting and journey header can use it.
+    const { data: { user } } = await supabase.auth.getUser()
+    const name = (user?.user_metadata?.name as string | undefined)?.trim() ?? ''
+
     const profile = {
-      name: '',
+      name,
       role: role.trim(),
       seniority: selectedLevel,
       companyName: '',
