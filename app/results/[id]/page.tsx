@@ -356,6 +356,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true)
   const [coachingLoading, setCoachingLoading] = useState(false)
   const [coachingError, setCoachingError] = useState<string | null>(null)
+  const [coachingErrorCode, setCoachingErrorCode] = useState<string | null>(null)
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [tone, setTone] = useState<string>(TONES.base)
 
@@ -373,10 +374,15 @@ export default function ResultsPage() {
   const fetchCoaching = useCallback(async (s: Session) => {
     setCoachingLoading(true)
     setCoachingError(null)
+    setCoachingErrorCode(null)
     try {
+      const { data: { session: authSession } } = await supabase.auth.getSession()
       const res = await fetch('/api/analyse', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authSession?.access_token ? { Authorization: `Bearer ${authSession.access_token}` } : {}),
+        },
         body: JSON.stringify({
           transcript: s.transcript,
           userTitle: s.userTitle,
@@ -390,6 +396,7 @@ export default function ResultsPage() {
       const data = await res.json()
       if (!res.ok) {
         setCoachingError(data.error || 'Coaching failed — please try again.')
+        setCoachingErrorCode(data.code ?? null)
         setCoachingLoading(false)
         return
       }
@@ -489,10 +496,22 @@ export default function ResultsPage() {
         <main className={`${col} pt-16 pb-24`}>
           <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
             <p className="text-sm text-red-600 mb-3">{coachingError}</p>
-            <button type="button" onClick={() => fetchCoaching(session)}
-              className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
-              Try again
-            </button>
+            {coachingErrorCode === 'unauthenticated' ? (
+              <Link href="/auth"
+                className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+                Sign in to continue
+              </Link>
+            ) : coachingErrorCode === 'quota_exceeded' ? (
+              <Link href="/dashboard"
+                className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+                Upgrade to keep going
+              </Link>
+            ) : (
+              <button type="button" onClick={() => fetchCoaching(session)}
+                className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+                Try again
+              </button>
+            )}
           </div>
         </main>
       )}

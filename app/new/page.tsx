@@ -10,6 +10,7 @@ import { parseTranscript, extractRolesFromTranscript } from '@/lib/transcript-pa
 import { lookupRole } from '@/lib/stakeholders'
 import { ROLE_GROUPS, getAllRoles, addCustomRole } from '@/lib/default-roles'
 import { generateId } from '@/lib/utils'
+import { useAuth } from '@/components/auth-provider'
 import type { Participant } from '@/types'
 
 const ALL_ROLES = ROLE_GROUPS.flatMap(g => g.roles)
@@ -146,20 +147,27 @@ function ParticipantRow({
 
 export default function NewMeetingPage() {
   const router = useRouter()
+  const { user, loading } = useAuth()
   const [transcript, setTranscript] = useState('')
   const [participants, setParticipants] = useState<Participant[]>([])
   const [userTitle, setUserTitle] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Redirect to setup if no profile
+  // Analysing a meeting spends credits, so it requires an account. Send a
+  // signed-out visitor to sign in before they invest effort in a transcript.
   useEffect(() => {
+    if (loading) return
+    if (!user) {
+      router.replace('/auth')
+      return
+    }
     if (!hasProfile()) {
       router.replace('/setup')
       return
     }
     const profile = getProfile()
     if (profile?.role) setUserTitle(profile.role)
-  }, [router])
+  }, [router, user, loading])
 
   // Auto-detect participants from transcript
   useEffect(() => {

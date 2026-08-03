@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Check, ArrowLeft } from 'lucide-react'
 import { getDraft, saveSession, clearDraft } from '@/lib/storage'
+import { supabase } from '@/lib/supabase'
 import { generateId } from '@/lib/utils'
 import type { DeterministicAnalysis } from '@/types'
 
@@ -21,6 +22,7 @@ export default function AnalyzingPage() {
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
   const [currentStep, setCurrentStep] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [errorCode, setErrorCode] = useState<string | null>(null)
 
   useEffect(() => {
     const draft = getDraft()
@@ -31,11 +33,13 @@ export default function AnalyzingPage() {
     let apiFinished = false
     let deterministicResult: DeterministicAnalysis | null = null
     let apiError: string | null = null
+    let apiErrorCode: string | null = null
 
     function tryComplete() {
       if (!stepsFinished || !apiFinished) return
       if (apiError || !deterministicResult) {
         setError(apiError || 'Something went wrong — please try again.')
+        setErrorCode(apiErrorCode)
         return
       }
       const sessionId = generateId()
@@ -72,19 +76,26 @@ export default function AnalyzingPage() {
     }
     runNextStep()
 
-    fetch('/api/analyse/step1', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        transcript: draft.transcript,
-        userTitle: draft.userTitle,
-        meetingTitle: 'Meeting',
-        participants: draft.participants,
-      }),
-    })
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => fetch('/api/analyse/step1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          transcript: draft.transcript,
+          userTitle: draft.userTitle,
+          meetingTitle: 'Meeting',
+          participants: draft.participants,
+        }),
+      }))
       .then(async res => {
         const data = await res.json()
-        if (!res.ok) { apiError = data.error || 'Analysis failed — please try again.' }
+        if (!res.ok) {
+          apiError = data.error || 'Analysis failed — please try again.'
+          apiErrorCode = data.code ?? null
+        }
         else { deterministicResult = data }
         apiFinished = true
         tryComplete()
@@ -100,9 +111,19 @@ export default function AnalyzingPage() {
     return (
       <div className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center px-6">
         <p className="text-red-500 text-sm mb-6 text-center max-w-sm">{error}</p>
-        <Link href="/new" className="text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
-          ← Go back and try again
-        </Link>
+        {errorCode === 'unauthenticated' ? (
+          <Link href="/auth" className="text-sm font-semibold bg-[#C96442] hover:bg-[#B85839] text-white px-5 py-2.5 rounded-xl transition-colors">
+            Sign in
+          </Link>
+        ) : errorCode === 'quota_exceeded' ? (
+          <Link href="/dashboard" className="text-sm font-semibold bg-[#C96442] hover:bg-[#B85839] text-white px-5 py-2.5 rounded-xl transition-colors">
+            Upgrade to keep going
+          </Link>
+        ) : (
+          <Link href="/new" className="text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
+            ← Go back and try again
+          </Link>
+        )}
       </div>
     )
   }
