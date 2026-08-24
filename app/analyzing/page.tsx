@@ -9,6 +9,8 @@ import { supabase } from '@/lib/supabase'
 import { generateId } from '@/lib/utils'
 import type { DeterministicAnalysis } from '@/types'
 
+const serif = 'font-[family-name:var(--font-fraunces)]'
+
 const STEPS = [
   { label: 'Parsing transcript', duration: 700 },
   { label: 'Identifying participants', duration: 900 },
@@ -16,6 +18,34 @@ const STEPS = [
   { label: 'Mapping your communication patterns', duration: 1000 },
   { label: 'Building your report', duration: 600 },
 ]
+
+// The stopped-early states (auth, quota, failure) share the editorial framing
+// used across the app — an eyebrow, a serif headline, warm body copy, and a
+// single terracotta action — so a wall never reads as a raw red error.
+function errorView(code: string | null, message: string) {
+  if (code === 'quota_exceeded') {
+    return {
+      eyebrow: 'Free meeting used',
+      title: 'You’ve used your free meeting',
+      body: 'Upgrade to keep analysing meetings and watch your patterns build over time.',
+      cta: { label: 'Upgrade to keep going', href: '/dashboard' },
+    }
+  }
+  if (code === 'unauthenticated') {
+    return {
+      eyebrow: 'One step first',
+      title: 'Sign in to see your coaching',
+      body: 'Analysing a meeting needs an account — it’s how your coaching history is saved.',
+      cta: { label: 'Sign in', href: '/auth' },
+    }
+  }
+  return {
+    eyebrow: 'Something went wrong',
+    title: 'That didn’t go through',
+    body: message,
+    cta: { label: 'Go back and try again', href: '/new' },
+  }
+}
 
 export default function AnalyzingPage() {
   const router = useRouter()
@@ -108,22 +138,26 @@ export default function AnalyzingPage() {
   }, [router])
 
   if (error) {
+    const v = errorView(errorCode, error)
     return (
       <div className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center px-6">
-        <p className="text-red-500 text-sm mb-6 text-center max-w-sm">{error}</p>
-        {errorCode === 'unauthenticated' ? (
-          <Link href="/auth" className="text-sm font-semibold bg-[#C96442] hover:bg-[#B85839] text-white px-5 py-2.5 rounded-xl transition-colors">
-            Sign in
+        <div className="max-w-sm w-full text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A89A86] mb-4">
+            {v.eyebrow}
+          </p>
+          <h1 className={`${serif} text-[28px] leading-tight font-semibold text-[#1C1510] mb-3`}>
+            {v.title}
+          </h1>
+          <p className="text-[15px] text-[#6B6259] leading-relaxed mb-8">
+            {v.body}
+          </p>
+          <Link
+            href={v.cta.href}
+            className="inline-flex items-center justify-center bg-[#C96442] hover:bg-[#B85839] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#C96442]/20"
+          >
+            {v.cta.label}
           </Link>
-        ) : errorCode === 'quota_exceeded' ? (
-          <Link href="/dashboard" className="text-sm font-semibold bg-[#C96442] hover:bg-[#B85839] text-white px-5 py-2.5 rounded-xl transition-colors">
-            Upgrade to keep going
-          </Link>
-        ) : (
-          <Link href="/new" className="text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
-            ← Go back and try again
-          </Link>
-        )}
+        </div>
       </div>
     )
   }

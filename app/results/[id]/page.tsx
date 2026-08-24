@@ -494,21 +494,35 @@ export default function ResultsPage() {
 
       {coachingError && !coachingLoading && (
         <main className={`${col} pt-16 pb-24`}>
-          <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
-            <p className="text-sm text-red-600 mb-3">{coachingError}</p>
+          <div className="max-w-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A89A86] mb-4">
+              {coachingErrorCode === 'quota_exceeded'
+                ? 'Free meeting used'
+                : coachingErrorCode === 'unauthenticated'
+                ? 'One step first'
+                : 'Something went wrong'}
+            </p>
+            <h2 className={`${serif} text-[26px] leading-tight font-semibold text-[#1C1510] mb-3`}>
+              {coachingErrorCode === 'quota_exceeded'
+                ? 'You’ve used your free meeting'
+                : coachingErrorCode === 'unauthenticated'
+                ? 'Sign in to see your coaching'
+                : 'That didn’t go through'}
+            </h2>
+            <p className="text-[15px] text-[#6B6259] leading-relaxed mb-8">{coachingError}</p>
             {coachingErrorCode === 'unauthenticated' ? (
               <Link href="/auth"
-                className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
-                Sign in to continue
+                className="inline-flex items-center justify-center bg-[#C96442] hover:bg-[#B85839] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#C96442]/20">
+                Sign in
               </Link>
             ) : coachingErrorCode === 'quota_exceeded' ? (
               <Link href="/dashboard"
-                className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+                className="inline-flex items-center justify-center bg-[#C96442] hover:bg-[#B85839] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#C96442]/20">
                 Upgrade to keep going
               </Link>
             ) : (
               <button type="button" onClick={() => fetchCoaching(session)}
-                className="text-xs font-semibold text-red-600 hover:text-red-800 underline">
+                className="inline-flex items-center justify-center bg-[#C96442] hover:bg-[#B85839] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#C96442]/20">
                 Try again
               </button>
             )}
