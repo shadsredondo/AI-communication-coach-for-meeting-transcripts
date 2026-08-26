@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { generateId } from '@/lib/utils'
 import type { DeterministicAnalysis } from '@/types'
 
-const serif = 'font-[family-name:var(--font-fraunces)]'
+const serif = 'font-[family-name:var(--font-newsreader)]'
 
 const STEPS = [
   { label: 'Parsing transcript', duration: 700 },
@@ -21,7 +21,7 @@ const STEPS = [
 
 // The stopped-early states (auth, quota, failure) share the editorial framing
 // used across the app — an eyebrow, a serif headline, warm body copy, and a
-// single terracotta action — so a wall never reads as a raw red error.
+// single pine action — so a wall never reads as a raw red error.
 function errorView(code: string | null, message: string) {
   if (code === 'quota_exceeded') {
     return {
@@ -140,20 +140,20 @@ export default function AnalyzingPage() {
   if (error) {
     const v = errorView(errorCode, error)
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-[#F1F0EA] flex flex-col items-center justify-center px-6">
         <div className="max-w-sm w-full text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A89A86] mb-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8C8F86] mb-4">
             {v.eyebrow}
           </p>
-          <h1 className={`${serif} text-[28px] leading-tight font-semibold text-[#1C1510] mb-3`}>
+          <h1 className={`${serif} text-[28px] leading-tight font-semibold text-[#1B211E] mb-3`}>
             {v.title}
           </h1>
-          <p className="text-[15px] text-[#6B6259] leading-relaxed mb-8">
+          <p className="text-[15px] text-[#4A4F49] leading-relaxed mb-8">
             {v.body}
           </p>
           <Link
             href={v.cta.href}
-            className="inline-flex items-center justify-center bg-[#C96442] hover:bg-[#B85839] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#C96442]/20"
+            className="inline-flex items-center justify-center bg-[#1F4A3D] hover:bg-[#163329] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#1F4A3D]/20"
           >
             {v.cta.label}
           </Link>
@@ -163,11 +163,11 @@ export default function AnalyzingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex flex-col px-6">
+    <div className="min-h-screen bg-[#F1F0EA] flex flex-col px-6">
       <nav className="py-5 max-w-sm mx-auto w-full">
         <Link
           href="/new"
-          className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors"
+          className="flex items-center gap-2 text-sm text-[#6B6F66] hover:text-[#1B211E] transition-colors"
         >
           <ArrowLeft size={15} />
           Back
@@ -180,15 +180,15 @@ export default function AnalyzingPage() {
           {/* Pulse icon */}
           <div className="flex justify-center mb-10">
             <div className="relative w-14 h-14">
-              <div className="absolute inset-0 rounded-full bg-[#C96442]/15 animate-ping" />
-              <div className="relative w-14 h-14 rounded-full bg-[#C96442]/10 border border-[#C96442]/30 flex items-center justify-center">
-                <div className="w-5 h-5 rounded-full bg-[#C96442] animate-pulse" />
+              <div className="absolute inset-0 rounded-full bg-[#1F4A3D]/15 animate-ping" />
+              <div className="relative w-14 h-14 rounded-full bg-[#1F4A3D]/10 border border-[#1F4A3D]/30 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-[#1F4A3D] animate-pulse" />
               </div>
             </div>
           </div>
 
-          <h1 className="text-xl font-semibold text-[#1C1510] mb-2">Reading the room…</h1>
-          <p className="text-sm text-[#78716C] mb-10">
+          <h1 className="text-xl font-semibold text-[#1B211E] mb-2">Reading the room…</h1>
+          <p className="text-sm text-[#6B6F66] mb-10">
             Extracting what actually happened
           </p>
 
@@ -206,16 +206,16 @@ export default function AnalyzingPage() {
                 >
                   <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                     isDone
-                      ? 'bg-[#C96442] border-[#C96442]'
+                      ? 'bg-[#1F4A3D] border-[#1F4A3D]'
                       : isActive
-                      ? 'border-[#C96442] bg-transparent'
-                      : 'border-[#E8DFD3] bg-transparent'
+                      ? 'border-[#1F4A3D] bg-transparent'
+                      : 'border-[#DBDAD0] bg-transparent'
                   }`}>
                     {isDone && <Check size={10} className="text-white" strokeWidth={3} />}
-                    {isActive && <div className="w-2 h-2 rounded-full bg-[#C96442] animate-pulse" />}
+                    {isActive && <div className="w-2 h-2 rounded-full bg-[#1F4A3D] animate-pulse" />}
                   </div>
                   <span className={`text-sm transition-colors duration-300 ${
-                    isDone ? 'text-[#B8A99A]' : isActive ? 'text-[#1C1510]' : 'text-[#E8DFD3]'
+                    isDone ? 'text-[#8C8F86]' : isActive ? 'text-[#1B211E]' : 'text-[#DBDAD0]'
                   }`}>
                     {step.label}
                   </span>

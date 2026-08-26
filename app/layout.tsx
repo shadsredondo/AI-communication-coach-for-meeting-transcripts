@@ -1,16 +1,17 @@
 import type { Metadata } from 'next'
-import { Geist, Fraunces } from 'next/font/google'
+import { Newsreader, Hanken_Grotesk } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Providers } from '@/components/providers'
 import './globals.css'
 
-const geist = Geist({
-  variable: '--font-geist-sans',
+const hanken = Hanken_Grotesk({
+  variable: '--font-hanken',
   subsets: ['latin'],
+  display: 'swap',
 })
 
-const fraunces = Fraunces({
-  variable: '--font-fraunces',
+const newsreader = Newsreader({
+  variable: '--font-newsreader',
   subsets: ['latin'],
   display: 'swap',
 })
@@ -26,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${geist.variable} ${fraunces.variable} h-full`}>
-      <body className="min-h-full font-[family-name:var(--font-geist-sans)]">
+    <html lang="en" className={`${hanken.variable} ${newsreader.variable} h-full`}>
+      <body className="min-h-full font-[family-name:var(--font-hanken)]">
         <Providers>
           {children}
         </Providers>

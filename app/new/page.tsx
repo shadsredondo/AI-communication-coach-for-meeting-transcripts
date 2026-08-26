@@ -66,7 +66,7 @@ function RoleInput({ value, onChange }: { value: string; onChange: (v: string) =
   return (
     <div className="relative flex-1">
       <input
-        className="w-full px-3 py-2 text-sm bg-transparent border-0 border-b border-[#E8DFD3] focus:border-[#C96442] focus:outline-none text-[#1C1510] placeholder-[#B8A99A] transition-colors"
+        className="w-full px-3 py-2 text-sm bg-transparent border-0 border-b border-[#DBDAD0] focus:border-[#1F4A3D] focus:outline-none text-[#1B211E] placeholder-[#8C8F86] transition-colors"
         placeholder="Their role…"
         value={query}
         onChange={e => { setQuery(e.target.value); setOpen(true) }}
@@ -74,24 +74,24 @@ function RoleInput({ value, onChange }: { value: string; onChange: (v: string) =
         onBlur={handleBlur}
       />
       {open && (filtered.length > 0 || (query.trim() && !allRoles.includes(query.trim()))) && (
-        <ul className="absolute z-10 left-0 right-0 top-full mt-1 bg-white rounded-xl border border-[#E8DFD3] shadow-lg overflow-hidden">
+        <ul className="absolute z-10 left-0 right-0 top-full mt-1 bg-white rounded-xl border border-[#DBDAD0] shadow-lg overflow-hidden">
           {filtered.map(r => (
             <li key={r}>
               <button
                 type="button"
                 onMouseDown={() => select(r)}
-                className="w-full text-left px-4 py-2.5 text-sm text-[#1C1510] hover:bg-[#FAF7F2] transition-colors"
+                className="w-full text-left px-4 py-2.5 text-sm text-[#1B211E] hover:bg-[#F1F0EA] transition-colors"
               >
                 {r}
               </button>
             </li>
           ))}
           {query.trim() && !allRoles.includes(query.trim()) && (
-            <li className={filtered.length > 0 ? 'border-t border-[#E8DFD3]' : ''}>
+            <li className={filtered.length > 0 ? 'border-t border-[#DBDAD0]' : ''}>
               <button
                 type="button"
                 onMouseDown={() => select(query.trim())}
-                className="w-full text-left px-4 py-2.5 text-sm text-[#C96442] hover:bg-[#FAF7F2] transition-colors"
+                className="w-full text-left px-4 py-2.5 text-sm text-[#1F4A3D] hover:bg-[#F1F0EA] transition-colors"
               >
                 Use &ldquo;{query.trim()}&rdquo;
               </button>
@@ -115,19 +115,19 @@ function ParticipantRow({
   onRemove: () => void
 }) {
   return (
-    <div className="flex items-center gap-4 px-4 py-3 bg-white rounded-2xl border border-[#E8DFD3] hover:border-[#C96442]/30 transition-colors">
-      <div className="flex-shrink-0 w-9 h-9 rounded-full bg-[#C96442]/10 flex items-center justify-center">
-        <span className="text-xs font-semibold text-[#C96442]">
+    <div className="flex items-center gap-4 px-4 py-3 bg-white rounded-2xl border border-[#DBDAD0] hover:border-[#1F4A3D]/30 transition-colors">
+      <div className="flex-shrink-0 w-9 h-9 rounded-full bg-[#1F4A3D]/10 flex items-center justify-center">
+        <span className="text-xs font-semibold text-[#1F4A3D]">
           {getInitials(participant.name)}
         </span>
       </div>
       <input
-        className="w-0 flex-[2] px-0 py-1 text-sm font-medium text-[#1C1510] bg-transparent border-0 border-b border-[#E8DFD3] focus:border-[#C96442] focus:outline-none placeholder-[#B8A99A] transition-colors min-w-0"
+        className="w-0 flex-[2] px-0 py-1 text-sm font-medium text-[#1B211E] bg-transparent border-0 border-b border-[#DBDAD0] focus:border-[#1F4A3D] focus:outline-none placeholder-[#8C8F86] transition-colors min-w-0"
         placeholder="Name"
         value={participant.name}
         onChange={e => onUpdate({ ...participant, name: e.target.value })}
       />
-      <div className="flex-shrink-0 w-px h-5 bg-[#E8DFD3]" />
+      <div className="flex-shrink-0 w-px h-5 bg-[#DBDAD0]" />
       <RoleInput
         value={participant.role}
         onChange={role => onUpdate({ ...participant, role })}
@@ -135,7 +135,7 @@ function ParticipantRow({
       <button
         type="button"
         onClick={onRemove}
-        className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[#B8A99A] hover:text-[#78716C] hover:bg-[#F0EBE3] transition-all"
+        className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[#8C8F86] hover:text-[#6B6F66] hover:bg-[#E8E7DE] transition-all"
       >
         <X size={13} />
       </button>
@@ -238,19 +238,19 @@ export default function NewMeetingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2]">
+    <div className="min-h-screen bg-[#F1F0EA]">
 
       {/* Nav */}
-      <nav className="px-6 py-4 border-b border-[#E8DFD3] bg-[#FAF7F2]">
+      <nav className="px-6 py-4 border-b border-[#DBDAD0] bg-[#F1F0EA]">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors"
+            className="flex items-center gap-2 text-sm text-[#6B6F66] hover:text-[#1B211E] transition-colors"
           >
             <ArrowLeft size={15} />
             Back
           </Link>
-          <span className="text-sm font-semibold text-[#1C1510]">Signal</span>
+          <span className="text-sm font-semibold text-[#1B211E]">Signal</span>
           <div className="w-16" />
         </div>
       </nav>
@@ -259,17 +259,17 @@ export default function NewMeetingPage() {
 
         {/* Header */}
         <div className="mb-10 fade-in">
-          <h1 className="text-2xl font-semibold text-[#1C1510] mb-2">
+          <h1 className="text-2xl font-semibold text-[#1B211E] mb-2">
             Bring in a conversation that mattered
           </h1>
-          <p className="text-sm text-[#78716C]">
+          <p className="text-sm text-[#6B6F66]">
             The more context you share, the sharper your coaching.
           </p>
         </div>
 
         {/* Transcript */}
         <div className="mb-10 fade-in-1">
-          <label className="text-sm font-semibold text-[#1C1510] block mb-2">
+          <label className="text-sm font-semibold text-[#1B211E] block mb-2">
             Transcript
           </label>
           <textarea
@@ -280,10 +280,10 @@ export default function NewMeetingPage() {
               setTranscript(e.target.value)
               if (errors.transcript) setErrors(prev => ({ ...prev, transcript: '' }))
             }}
-            className={`w-full rounded-xl border bg-white px-4 py-3.5 text-sm text-[#1C1510] placeholder:text-[#B8A99A] transition-colors resize-none focus:outline-none focus:ring-2 ${
+            className={`w-full rounded-xl border bg-white px-4 py-3.5 text-sm text-[#1B211E] placeholder:text-[#8C8F86] transition-colors resize-none focus:outline-none focus:ring-2 ${
               errors.transcript
                 ? 'border-red-300 focus:ring-red-200'
-                : 'border-[#E8DFD3] focus:border-[#C96442] focus:ring-[#C96442]/15'
+                : 'border-[#DBDAD0] focus:border-[#1F4A3D] focus:ring-[#1F4A3D]/15'
             }`}
           />
           {errors.transcript && (
@@ -291,12 +291,12 @@ export default function NewMeetingPage() {
           )}
         </div>
 
-        <div className="border-t border-[#E8DFD3] mb-10" />
+        <div className="border-t border-[#DBDAD0] mb-10" />
 
         {/* Participants */}
         <div className="mb-10 fade-in-2">
-          <h2 className="text-base font-semibold text-[#1C1510] mb-1">Who was in the room?</h2>
-          <p className="text-sm text-[#78716C] mb-5">
+          <h2 className="text-base font-semibold text-[#1B211E] mb-1">Who was in the room?</h2>
+          <p className="text-sm text-[#6B6F66] mb-5">
             {transcript.trim()
               ? 'Detected from your transcript — edit as needed.'
               : 'Paste your transcript above and participants will be auto-detected.'}
@@ -305,9 +305,9 @@ export default function NewMeetingPage() {
           {participants.length > 0 && (
             <div className="flex items-center gap-4 px-4 mb-2">
               <div className="w-9 flex-shrink-0" />
-              <span className="flex-[2] text-[10px] font-semibold text-[#78716C] uppercase tracking-widest">Name</span>
+              <span className="flex-[2] text-[10px] font-semibold text-[#6B6F66] uppercase tracking-widest">Name</span>
               <div className="w-px flex-shrink-0" />
-              <span className="flex-1 text-[10px] font-semibold text-[#78716C] uppercase tracking-widest">Role</span>
+              <span className="flex-1 text-[10px] font-semibold text-[#6B6F66] uppercase tracking-widest">Role</span>
               <div className="w-7 flex-shrink-0" />
             </div>
           )}
@@ -330,19 +330,19 @@ export default function NewMeetingPage() {
           <button
             type="button"
             onClick={addParticipant}
-            className="flex items-center gap-1.5 text-sm text-[#C96442] hover:text-[#B85839] font-medium transition-colors"
+            className="flex items-center gap-1.5 text-sm text-[#1F4A3D] hover:text-[#163329] font-medium transition-colors"
           >
             <Plus size={14} />
             Add someone
           </button>
         </div>
 
-        <div className="border-t border-[#E8DFD3] mb-10" />
+        <div className="border-t border-[#DBDAD0] mb-10" />
 
         {/* Your title */}
         <div className="mb-10 fade-in-3">
-          <h2 className="text-base font-semibold text-[#1C1510] mb-1">Your title</h2>
-          <p className="text-sm text-[#78716C] mb-4">
+          <h2 className="text-base font-semibold text-[#1B211E] mb-1">Your title</h2>
+          <p className="text-sm text-[#6B6F66] mb-4">
             Helps us frame the coaching from your perspective.
           </p>
           <input
@@ -353,10 +353,10 @@ export default function NewMeetingPage() {
               setUserTitle(e.target.value)
               if (errors.userTitle) setErrors(prev => ({ ...prev, userTitle: '' }))
             }}
-            className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] transition-colors focus:outline-none focus:ring-2 ${
+            className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#1B211E] placeholder:text-[#8C8F86] transition-colors focus:outline-none focus:ring-2 ${
               errors.userTitle
                 ? 'border-red-300 focus:ring-red-200'
-                : 'border-[#E8DFD3] focus:border-[#C96442] focus:ring-[#C96442]/15'
+                : 'border-[#DBDAD0] focus:border-[#1F4A3D] focus:ring-[#1F4A3D]/15'
             }`}
           />
           {errors.userTitle && (
@@ -368,7 +368,7 @@ export default function NewMeetingPage() {
         <div className="fade-in-3">
           <button
             onClick={handleGenerate}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#C96442] hover:bg-[#B85839] text-white font-medium px-6 py-4 rounded-xl transition-all duration-150 text-sm shadow-lg shadow-[#C96442]/20"
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#1F4A3D] hover:bg-[#163329] text-white font-medium px-6 py-4 rounded-xl transition-all duration-150 text-sm shadow-lg shadow-[#1F4A3D]/20"
           >
             Generate my coaching
             <ArrowRight size={16} />

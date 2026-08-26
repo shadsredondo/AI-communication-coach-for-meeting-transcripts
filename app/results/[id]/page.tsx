@@ -11,22 +11,22 @@ import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import type { Session, CoachingOutput } from '@/types'
 
-const serif = 'font-[family-name:var(--font-fraunces)]'
+const serif = 'font-[family-name:var(--font-newsreader)]'
 
-// Aesop-earthy tonal palette — narrow warm range, felt not jarring
+// Pine tonal palette — narrow greige range, felt not jarring
 const TONES = {
-  base:    '#FAF7F2',
-  paper:   '#F7F2E9',
-  sand:    '#F4EEE3',
-  warm:    '#F7F3EC',
-  deep:    '#EEE6D8',
+  base:    '#F1F0EA',
+  paper:   '#EDECE4',
+  sand:    '#E8E7DE',
+  warm:    '#EDECE4',
+  deep:    '#E3E1D6',
 } as const
 
 // ─── Section eyebrow ─────────────────────────────────────────────────────────────
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A89A86] mb-5">
+    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8C8F86] mb-5">
       {children}
     </p>
   )
@@ -122,33 +122,33 @@ function JourneyHeader({
     <Reveal>
       <Eyebrow>Your path</Eyebrow>
       {heroArchetype && (
-        <h2 className={`${serif} text-[26px] leading-tight font-semibold text-[#1C1510] mb-4`}>
+        <h2 className={`${serif} text-[26px] leading-tight font-semibold text-[#1B211E] mb-4`}>
           Becoming {heroArchetype}
         </h2>
       )}
       {currentArchetype && (
-        <p className="text-[17px] text-[#6B6259] leading-relaxed mb-8">
-          Today you show up as <span className="text-[#1C1510] font-medium">{currentArchetype}</span>.
+        <p className="text-[17px] text-[#4A4F49] leading-relaxed mb-8">
+          Today you show up as <span className="text-[#1B211E] font-medium">{currentArchetype}</span>.
           The work below is how you grow from one into the other — one meeting at a time.
         </p>
       )}
 
       {(strengths || challenge) && (
-        <div className="flex flex-col sm:flex-row gap-x-12 gap-y-5 border-t border-[#E2D9CA] pt-7">
+        <div className="flex flex-col sm:flex-row gap-x-12 gap-y-5 border-t border-[#DBDAD0] pt-7">
           {strengths && (
             <div className="flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#3D7A5E] mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1F4A3D] mb-2">
                 Your strength
               </p>
-              <p className="text-[15px] text-[#1C1510] leading-snug">{strengths}</p>
+              <p className="text-[15px] text-[#1B211E] leading-snug">{strengths}</p>
             </div>
           )}
           {challenge && (
             <div className="flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#C96442] mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1F4A3D] mb-2">
                 You&rsquo;re growing
               </p>
-              <p className="text-[15px] text-[#1C1510] leading-snug">{challenge}</p>
+              <p className="text-[15px] text-[#1B211E] leading-snug">{challenge}</p>
             </div>
           )}
         </div>
@@ -170,10 +170,10 @@ function SnapshotSection({ snapshot }: { snapshot: CoachingOutput['snapshot'] })
         {items.map((item, i) => (
           <Reveal key={i} delay={i * 120}>
             <li className="flex gap-5">
-              <span className={`${serif} text-3xl text-[#C96442]/35 leading-none w-7 flex-shrink-0`}>
+              <span className={`${serif} text-3xl text-[#1F4A3D]/35 leading-none w-7 flex-shrink-0`}>
                 {i + 1}
               </span>
-              <p className="text-[20px] text-[#1C1510] leading-snug font-medium pt-0.5">
+              <p className="text-[20px] text-[#1B211E] leading-snug font-medium pt-0.5">
                 {item.observation}
               </p>
             </li>
@@ -197,10 +197,10 @@ function ActionsSection({ snapshot }: { snapshot: CoachingOutput['snapshot'] }) 
         {items.map((item, i) => (
           <Reveal key={i} delay={i * 120}>
             <li className="flex gap-5">
-              <span className={`${serif} text-3xl text-[#C96442]/35 leading-none w-7 flex-shrink-0`}>
+              <span className={`${serif} text-3xl text-[#1F4A3D]/35 leading-none w-7 flex-shrink-0`}>
                 {i + 1}
               </span>
-              <p className="text-[18px] text-[#1C1510] leading-snug pt-1">
+              <p className="text-[18px] text-[#1B211E] leading-snug pt-1">
                 {item.action}
               </p>
             </li>
@@ -223,14 +223,14 @@ function NextLevelSection({
   return (
     <Reveal>
       <Eyebrow>The capability you&rsquo;re building</Eyebrow>
-      <h2 className={`${serif} text-[28px] leading-tight font-semibold text-[#1C1510] mb-3`}>
+      <h2 className={`${serif} text-[28px] leading-tight font-semibold text-[#1B211E] mb-3`}>
         {coaching.next_level.capability}
       </h2>
-      <p className="text-[16px] text-[#6B6259] leading-relaxed">
+      <p className="text-[16px] text-[#4A4F49] leading-relaxed">
         {coaching.next_level.in_this_meeting}
       </p>
       {heroArchetype && (
-        <p className="text-[14px] text-[#3D7A5E] mt-6 pt-5 border-t border-[#E2D9CA] font-medium">
+        <p className="text-[14px] text-[#1F4A3D] mt-6 pt-5 border-t border-[#DBDAD0] font-medium">
           This is the work that turns you into {heroArchetype}.
         </p>
       )}
@@ -244,7 +244,7 @@ function InsightHero({ remember }: { remember: string }) {
   return (
     <Reveal>
       <Eyebrow>Your takeaway</Eyebrow>
-      <p className={`${serif} text-[clamp(40px,6vw,56px)] leading-[1.08] font-semibold text-[#1C1510]`}>
+      <p className={`${serif} text-[clamp(40px,6vw,56px)] leading-[1.08] font-semibold text-[#1B211E]`}>
         &ldquo;{remember}&rdquo;
       </p>
     </Reveal>
@@ -257,16 +257,16 @@ function CoachingLoadingState() {
   return (
     <div className="space-y-16 animate-pulse">
       <div>
-        <div className="h-3 bg-[#EAE3D8] rounded-full w-24 mb-5" />
-        <div className="h-10 bg-[#EAE3D8] rounded-2xl w-3/4 mb-4" />
-        <div className="h-4 bg-[#F0EBE3] rounded-full w-full mb-2" />
-        <div className="h-4 bg-[#F0EBE3] rounded-full w-2/3" />
+        <div className="h-3 bg-[#E2E1D7] rounded-full w-24 mb-5" />
+        <div className="h-10 bg-[#E2E1D7] rounded-2xl w-3/4 mb-4" />
+        <div className="h-4 bg-[#E8E7DE] rounded-full w-full mb-2" />
+        <div className="h-4 bg-[#E8E7DE] rounded-full w-2/3" />
       </div>
       <div>
-        <div className="h-3 bg-[#EAE3D8] rounded-full w-44 mb-6" />
+        <div className="h-3 bg-[#E2E1D7] rounded-full w-44 mb-6" />
         <div className="space-y-5">
           {[0, 1, 2].map(i => (
-            <div key={i} className="h-5 bg-[#F0EBE3] rounded-full w-full" />
+            <div key={i} className="h-5 bg-[#E8E7DE] rounded-full w-full" />
           ))}
         </div>
       </div>
@@ -310,38 +310,38 @@ function SaveProgressBanner({ session }: { session: Session }) {
 
   if (saved) {
     return (
-      <div className="bg-[#F0EBE3] rounded-3xl px-6 py-5 text-center">
-        <p className="text-sm font-semibold text-[#1C1510] mb-1">You&rsquo;re all set ✓</p>
-        <p className="text-xs text-[#78716C]">Saved. Sign in anytime to pick up where you left off.</p>
+      <div className="bg-[#E8E7DE] rounded-3xl px-6 py-5 text-center">
+        <p className="text-sm font-semibold text-[#1B211E] mb-1">You&rsquo;re all set ✓</p>
+        <p className="text-xs text-[#6B6F66]">Saved. Sign in anytime to pick up where you left off.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-[#F4EFE6] rounded-3xl px-6 pt-6 pb-5">
-      <p className="text-base font-semibold text-[#1C1510] mb-1">Keep this. Watch yourself grow.</p>
-      <p className="text-sm text-[#78716C] mb-5 leading-relaxed">
+    <div className="bg-[#E8E7DE] rounded-3xl px-6 pt-6 pb-5">
+      <p className="text-base font-semibold text-[#1B211E] mb-1">Keep this. Watch yourself grow.</p>
+      <p className="text-sm text-[#6B6F66] mb-5 leading-relaxed">
         Create a free account — every report is saved, so your path builds over time.
       </p>
       <form onSubmit={handleSave} className="space-y-2.5">
         <input type="text" placeholder="Your name" value={name}
           onChange={e => { setName(e.target.value); setError('') }}
-          className="w-full rounded-xl border border-[#E8DFD3] bg-white px-3.5 py-2.5 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
+          className="w-full rounded-xl border border-[#DBDAD0] bg-white px-3.5 py-2.5 text-sm text-[#1B211E] placeholder:text-[#8C8F86] focus:outline-none focus:border-[#1F4A3D] focus:ring-2 focus:ring-[#1F4A3D]/15 transition-colors" />
         <input type="email" placeholder="Email" value={email}
           onChange={e => { setEmail(e.target.value); setError('') }}
-          className="w-full rounded-xl border border-[#E8DFD3] bg-white px-3.5 py-2.5 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
+          className="w-full rounded-xl border border-[#DBDAD0] bg-white px-3.5 py-2.5 text-sm text-[#1B211E] placeholder:text-[#8C8F86] focus:outline-none focus:border-[#1F4A3D] focus:ring-2 focus:ring-[#1F4A3D]/15 transition-colors" />
         <input type="password" placeholder="Password (6+ characters)" value={password}
           onChange={e => { setPassword(e.target.value); setError('') }}
-          className="w-full rounded-xl border border-[#E8DFD3] bg-white px-3.5 py-2.5 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors" />
+          className="w-full rounded-xl border border-[#DBDAD0] bg-white px-3.5 py-2.5 text-sm text-[#1B211E] placeholder:text-[#8C8F86] focus:outline-none focus:border-[#1F4A3D] focus:ring-2 focus:ring-[#1F4A3D]/15 transition-colors" />
         {error && <p className="text-xs text-red-500">{error}</p>}
         <button type="submit" disabled={loading}
-          className="w-full bg-[#C96442] hover:bg-[#B85839] disabled:opacity-60 text-white font-medium py-2.5 rounded-xl text-sm transition-all">
+          className="w-full bg-[#1F4A3D] hover:bg-[#163329] disabled:opacity-60 text-white font-medium py-2.5 rounded-xl text-sm transition-all">
           {loading ? 'Saving…' : 'Save my report'}
         </button>
       </form>
-      <p className="text-[11px] text-[#B8A99A] text-center mt-2.5">
+      <p className="text-[11px] text-[#8C8F86] text-center mt-2.5">
         Already have an account?{' '}
-        <a href="/auth" className="underline hover:text-[#78716C] transition-colors">Sign in</a>
+        <a href="/auth" className="underline hover:text-[#6B6F66] transition-colors">Sign in</a>
       </p>
     </div>
   )
@@ -427,8 +427,8 @@ export default function ResultsPage() {
 
   if (loading || !session) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-[#C96442] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#F1F0EA] flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-[#1F4A3D] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -462,7 +462,7 @@ export default function ResultsPage() {
       {/* Nav */}
       <nav className="px-6 py-5">
         <div className={`${col} flex items-center justify-between !px-0`}>
-          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1510] transition-colors">
+          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-[#6B6F66] hover:text-[#1B211E] transition-colors">
             <ArrowLeft size={15} />
             All sessions
           </Link>
@@ -475,12 +475,12 @@ export default function ResultsPage() {
                     fetchCoaching(session)
                   }
                 }}
-                className="text-xs text-[#B8A99A] hover:text-[#78716C] transition-colors"
+                className="text-xs text-[#8C8F86] hover:text-[#6B6F66] transition-colors"
               >
                 Regenerate
               </button>
             )}
-            <span className="text-xs text-[#B8A99A]">{formatDate(session.createdAt)}</span>
+            <span className="text-xs text-[#8C8F86]">{formatDate(session.createdAt)}</span>
           </div>
         </div>
       </nav>
@@ -495,34 +495,34 @@ export default function ResultsPage() {
       {coachingError && !coachingLoading && (
         <main className={`${col} pt-16 pb-24`}>
           <div className="max-w-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A89A86] mb-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8C8F86] mb-4">
               {coachingErrorCode === 'quota_exceeded'
                 ? 'Free meeting used'
                 : coachingErrorCode === 'unauthenticated'
                 ? 'One step first'
                 : 'Something went wrong'}
             </p>
-            <h2 className={`${serif} text-[26px] leading-tight font-semibold text-[#1C1510] mb-3`}>
+            <h2 className={`${serif} text-[26px] leading-tight font-semibold text-[#1B211E] mb-3`}>
               {coachingErrorCode === 'quota_exceeded'
                 ? 'You’ve used your free meeting'
                 : coachingErrorCode === 'unauthenticated'
                 ? 'Sign in to see your coaching'
                 : 'That didn’t go through'}
             </h2>
-            <p className="text-[15px] text-[#6B6259] leading-relaxed mb-8">{coachingError}</p>
+            <p className="text-[15px] text-[#4A4F49] leading-relaxed mb-8">{coachingError}</p>
             {coachingErrorCode === 'unauthenticated' ? (
               <Link href="/auth"
-                className="inline-flex items-center justify-center bg-[#C96442] hover:bg-[#B85839] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#C96442]/20">
+                className="inline-flex items-center justify-center bg-[#1F4A3D] hover:bg-[#163329] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#1F4A3D]/20">
                 Sign in
               </Link>
             ) : coachingErrorCode === 'quota_exceeded' ? (
               <Link href="/dashboard"
-                className="inline-flex items-center justify-center bg-[#C96442] hover:bg-[#B85839] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#C96442]/20">
+                className="inline-flex items-center justify-center bg-[#1F4A3D] hover:bg-[#163329] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#1F4A3D]/20">
                 Upgrade to keep going
               </Link>
             ) : (
               <button type="button" onClick={() => fetchCoaching(session)}
-                className="inline-flex items-center justify-center bg-[#C96442] hover:bg-[#B85839] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#C96442]/20">
+                className="inline-flex items-center justify-center bg-[#1F4A3D] hover:bg-[#163329] text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors shadow-lg shadow-[#1F4A3D]/20">
                 Try again
               </button>
             )}
@@ -540,7 +540,7 @@ export default function ResultsPage() {
                 <InsightHero remember={c.remember} />
               </div>
               <Reveal delay={400} className="mt-16 flex justify-center">
-                <div className="flex flex-col items-center text-[#B8A99A]">
+                <div className="flex flex-col items-center text-[#8C8F86]">
                   <span className="text-[10px] uppercase tracking-[0.2em] mb-2">Read on</span>
                   <ChevronDown size={18} className="animate-bounce" />
                 </div>

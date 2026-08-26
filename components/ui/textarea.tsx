@@ -23,7 +23,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           className={cn(
             'w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors resize-none',
-            'focus:border-[#C96442] focus:outline-none focus:ring-2 focus:ring-[#C96442]/20',
+            'focus:border-[#1F4A3D] focus:outline-none focus:ring-2 focus:ring-[#1F4A3D]/20',
             error && 'border-red-400 focus:border-red-400 focus:ring-red-400/20',
             className
           )}

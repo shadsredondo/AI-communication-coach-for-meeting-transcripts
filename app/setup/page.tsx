@@ -93,10 +93,10 @@ function Chip({
       onClick={onClick}
       className={`px-3.5 py-2 text-sm rounded-full border transition-all duration-150 text-left ${
         selected
-          ? 'bg-[#C96442] text-white border-[#C96442] shadow-sm shadow-[#C96442]/20'
+          ? 'bg-[#1F4A3D] text-white border-[#1F4A3D] shadow-sm shadow-[#1F4A3D]/20'
           : highlighted
-          ? 'bg-[#F0EBE3] text-[#C96442] border-[#C96442]/40'
-          : 'bg-white text-[#78716C] border-[#E8DFD3] hover:border-[#C96442]/40 hover:text-[#C96442]'
+          ? 'bg-[#E8E7DE] text-[#1F4A3D] border-[#1F4A3D]/40'
+          : 'bg-white text-[#6B6F66] border-[#DBDAD0] hover:border-[#1F4A3D]/40 hover:text-[#1F4A3D]'
       }`}
     >
       {label}
@@ -221,11 +221,11 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
+    <div className="min-h-screen bg-[#F1F0EA] flex flex-col">
 
       {/* Nav */}
       <nav className="px-8 py-6 max-w-2xl mx-auto w-full">
-        <Link href="/" className="font-semibold text-lg tracking-tight text-[#1C1510]">
+        <Link href="/" className="font-semibold text-lg tracking-tight text-[#1B211E]">
           Signal
         </Link>
       </nav>
@@ -239,26 +239,26 @@ export default function SetupPage() {
             {[1, 2].map(s => (
               <div key={s} className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full transition-all ${
-                  s === step ? 'bg-[#C96442] w-6' : s < step ? 'bg-[#C96442]' : 'bg-[#E8DFD3]'
+                  s === step ? 'bg-[#1F4A3D] w-6' : s < step ? 'bg-[#1F4A3D]' : 'bg-[#DBDAD0]'
                 }`} />
               </div>
             ))}
-            <span className="text-xs text-[#78716C] ml-1">Step {step} of 2</span>
+            <span className="text-xs text-[#6B6F66] ml-1">Step {step} of 2</span>
           </div>
 
           {/* ── Step 1 ── */}
           {step === 1 && (
             <div className="fade-in">
-              <h1 className="text-2xl font-semibold text-[#1C1510] mb-2">
+              <h1 className="text-2xl font-semibold text-[#1B211E] mb-2">
                 Before we start, tell us about yourself.
               </h1>
-              <p className="text-sm text-[#78716C] mb-10 leading-relaxed">
+              <p className="text-sm text-[#6B6F66] mb-10 leading-relaxed">
                 This shapes every coaching report we give you. Takes 60 seconds.
               </p>
 
               {/* Role */}
               <div className="mb-8">
-                <label className="text-sm font-semibold text-[#1C1510] block mb-2">
+                <label className="text-sm font-semibold text-[#1B211E] block mb-2">
                   What's your role?
                 </label>
                 <input
@@ -266,10 +266,10 @@ export default function SetupPage() {
                   placeholder="e.g. Senior Product Manager, Engineering Lead…"
                   value={role}
                   onChange={e => handleRoleChange(e.target.value)}
-                  className={`w-full px-4 py-3 text-sm text-[#1C1510] bg-white border rounded-xl placeholder:text-[#B8A99A] focus:outline-none focus:ring-2 transition-all ${
+                  className={`w-full px-4 py-3 text-sm text-[#1B211E] bg-white border rounded-xl placeholder:text-[#8C8F86] focus:outline-none focus:ring-2 transition-all ${
                     errors.role
                       ? 'border-red-300 focus:ring-red-200'
-                      : 'border-[#E8DFD3] focus:ring-[#C96442]/20 focus:border-[#C96442]'
+                      : 'border-[#DBDAD0] focus:ring-[#1F4A3D]/20 focus:border-[#1F4A3D]'
                   }`}
                 />
                 {errors.role && <p className="text-xs text-red-500 mt-1.5">{errors.role}</p>}
@@ -278,11 +278,11 @@ export default function SetupPage() {
               {/* Level */}
               <div className="mb-8">
                 <div className="flex items-baseline gap-2 mb-3">
-                  <label className="text-sm font-semibold text-[#1C1510]">
+                  <label className="text-sm font-semibold text-[#1B211E]">
                     Your level
                   </label>
                   {inferredLevel && !hasManualLevel && (
-                    <span className="text-xs text-[#78716C]">
+                    <span className="text-xs text-[#6B6F66]">
                       — we inferred this from your role
                     </span>
                   )}
@@ -302,7 +302,7 @@ export default function SetupPage() {
 
               {/* Work environment */}
               <div className="mb-10">
-                <label className="text-sm font-semibold text-[#1C1510] block mb-3">
+                <label className="text-sm font-semibold text-[#1B211E] block mb-3">
                   What kind of company do you work at?
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -324,7 +324,7 @@ export default function SetupPage() {
               <button
                 type="button"
                 onClick={handleNext}
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#C96442] hover:bg-[#B85839] text-white font-medium px-6 py-3.5 rounded-xl transition-all duration-150 text-sm shadow-lg shadow-[#C96442]/20"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#1F4A3D] hover:bg-[#163329] text-white font-medium px-6 py-3.5 rounded-xl transition-all duration-150 text-sm shadow-lg shadow-[#1F4A3D]/20"
               >
                 Next
                 <ArrowRight size={15} />
@@ -335,19 +335,19 @@ export default function SetupPage() {
           {/* ── Step 2 ── */}
           {step === 2 && (
             <div className="fade-in">
-              <h1 className="text-2xl font-semibold text-[#1C1510] mb-2">
+              <h1 className="text-2xl font-semibold text-[#1B211E] mb-2">
                 Now let's talk about communication.
               </h1>
-              <p className="text-sm text-[#78716C] mb-10 leading-relaxed">
+              <p className="text-sm text-[#6B6F66] mb-10 leading-relaxed">
                 This tells Signal what to watch for and what to coach you on.
               </p>
 
               {/* Strengths */}
               <div className="mb-8">
-                <label className="text-sm font-semibold text-[#1C1510] block mb-1">
+                <label className="text-sm font-semibold text-[#1B211E] block mb-1">
                   What are you already good at?
                 </label>
-                <p className="text-xs text-[#78716C] mb-3">Pick up to two. Signal will remind you of these.</p>
+                <p className="text-xs text-[#6B6F66] mb-3">Pick up to two. Signal will remind you of these.</p>
                 <div className="flex flex-wrap gap-2">
                   {STRENGTH_OPTIONS.map(s => (
                     <Chip
@@ -363,10 +363,10 @@ export default function SetupPage() {
 
               {/* Challenge */}
               <div className="mb-8">
-                <label className="text-sm font-semibold text-[#1C1510] block mb-1">
+                <label className="text-sm font-semibold text-[#1B211E] block mb-1">
                   What's your biggest challenge in meetings?
                 </label>
-                <p className="text-xs text-[#78716C] mb-3">Pick up to two.</p>
+                <p className="text-xs text-[#6B6F66] mb-3">Pick up to two.</p>
                 <div className="flex flex-wrap gap-2">
                   {CHALLENGE_OPTIONS.map(c => (
                     <Chip
@@ -382,7 +382,7 @@ export default function SetupPage() {
 
               {/* Goal */}
               <div className="mb-10">
-                <label className="text-sm font-semibold text-[#1C1510] block mb-3">
+                <label className="text-sm font-semibold text-[#1B211E] block mb-3">
                   What do you most want to get better at?
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -405,14 +405,14 @@ export default function SetupPage() {
                 <button
                   type="button"
                   onClick={() => { setStep(1); setErrors({}) }}
-                  className="px-5 py-3.5 text-sm font-medium text-[#78716C] hover:text-[#1C1510] border border-[#E8DFD3] rounded-xl transition-colors bg-white"
+                  className="px-5 py-3.5 text-sm font-medium text-[#6B6F66] hover:text-[#1B211E] border border-[#DBDAD0] rounded-xl transition-colors bg-white"
                 >
                   Back
                 </button>
                 <button
                   type="button"
                   onClick={handleFinish}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#C96442] hover:bg-[#B85839] text-white font-medium px-6 py-3.5 rounded-xl transition-all duration-150 text-sm shadow-lg shadow-[#C96442]/20"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#1F4A3D] hover:bg-[#163329] text-white font-medium px-6 py-3.5 rounded-xl transition-all duration-150 text-sm shadow-lg shadow-[#1F4A3D]/20"
                 >
                   Start coaching
                   <ArrowRight size={15} />

@@ -24,7 +24,7 @@ export default function MeetingAnalysisPage() {
 
   if (!session || !session.meetingAnalysis) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1B211E] flex items-center justify-center">
         <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -41,7 +41,7 @@ export default function MeetingAnalysisPage() {
   }[c] ?? 'bg-zinc-500')
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white flex flex-col">
+    <div className="min-h-screen bg-[#1B211E] text-white flex flex-col">
 
       {/* Top bar */}
       <div className="border-b border-white/[0.06] px-8 py-4">
