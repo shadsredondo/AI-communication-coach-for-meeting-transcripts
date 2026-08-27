@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { DETERMINISTIC_PROMPT } from '@/lib/deterministic-prompt'
+import { authenticateRequest, checkQuota } from '@/lib/auth-server'
 import type { Participant } from '@/types'
 
 export const maxDuration = 60
@@ -18,6 +19,22 @@ function extractJSON(text: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Gate the paid endpoint: only a signed-in user can spend, and only up to
+    // their free allowance. This is the first Claude call in the chain, so
+    // enforcing quota here stops both calls before any money is spent.
+    const caller = await authenticateRequest(request)
+    if (!caller) {
+      return NextResponse.json({ error: 'Please sign in to analyse a meeting.', code: 'unauthenticated' }, { status: 401 })
+    }
+    const quota = await checkQuota(caller)
+    if (!quota.ok) {
+      const meetings = quota.limit === 1 ? 'free meeting' : `${quota.limit} free meetings`
+      return NextResponse.json(
+        { error: `You've used your ${meetings}. Upgrade to keep going.`, code: 'quota_exceeded' },
+        { status: 402 },
+      )
+    }
+
     const body = await request.json()
     const {
       transcript,

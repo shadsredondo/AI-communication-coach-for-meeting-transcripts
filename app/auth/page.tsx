@@ -115,11 +115,11 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
+    <div className="min-h-screen bg-[#F1F0EA] flex flex-col">
 
       {/* Top bar */}
       <div className="px-6 py-5 flex justify-center">
-        <span className="text-base font-semibold text-[#1C1510]">Signal</span>
+        <span className="text-base font-semibold text-[#1B211E]">Signal</span>
       </div>
 
       {/* Card */}
@@ -128,10 +128,10 @@ export default function AuthPage() {
 
           {/* Heading */}
           <div className="mb-8 text-center">
-            <h1 className="text-2xl font-semibold text-[#1C1510] mb-2">
+            <h1 className="text-2xl font-semibold text-[#1B211E] mb-2">
               {mode === 'signin' ? 'Welcome back' : 'Start your journey'}
             </h1>
-            <p className="text-sm text-[#78716C]">
+            <p className="text-sm text-[#6B6F66]">
               {mode === 'signin'
                 ? 'Your coaching history is waiting.'
                 : 'Your private space to get better at what matters.'}
@@ -139,7 +139,7 @@ export default function AuthPage() {
           </div>
 
           {/* Tab switcher */}
-          <div className="flex bg-[#F0EBE3] rounded-xl p-1 mb-6">
+          <div className="flex bg-[#E8E7DE] rounded-xl p-1 mb-6">
             {(['signin', 'signup'] as const).map(m => (
               <button
                 key={m}
@@ -147,8 +147,8 @@ export default function AuthPage() {
                 onClick={() => { setMode(m); setError('') }}
                 className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
                   mode === m
-                    ? 'bg-white text-[#1C1510] shadow-sm'
-                    : 'text-[#78716C] hover:text-[#1C1510]'
+                    ? 'bg-white text-[#1B211E] shadow-sm'
+                    : 'text-[#6B6F66] hover:text-[#1B211E]'
                 }`}
               >
                 {m === 'signin' ? 'Sign in' : 'Sign up'}
@@ -163,7 +163,7 @@ export default function AuthPage() {
           >
             {mode === 'signup' && (
               <div>
-                <label className="text-xs font-semibold text-[#78716C] uppercase tracking-widest block mb-1.5">
+                <label className="text-xs font-semibold text-[#6B6F66] uppercase tracking-widest block mb-1.5">
                   Your name
                 </label>
                 <input
@@ -171,13 +171,13 @@ export default function AuthPage() {
                   placeholder="e.g. Shradha"
                   value={name}
                   onChange={e => { setName(e.target.value); clearError() }}
-                  className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
+                  className="w-full rounded-xl border border-[#DBDAD0] bg-white px-4 py-3 text-sm text-[#1B211E] placeholder:text-[#8C8F86] focus:outline-none focus:border-[#1F4A3D] focus:ring-2 focus:ring-[#1F4A3D]/15 transition-colors"
                 />
               </div>
             )}
 
             <div>
-              <label className="text-xs font-semibold text-[#78716C] uppercase tracking-widest block mb-1.5">
+              <label className="text-xs font-semibold text-[#6B6F66] uppercase tracking-widest block mb-1.5">
                 Email
               </label>
               <input
@@ -186,12 +186,12 @@ export default function AuthPage() {
                 value={email}
                 onChange={e => { setEmail(e.target.value); clearError() }}
                 autoComplete="email"
-                className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
+                className="w-full rounded-xl border border-[#DBDAD0] bg-white px-4 py-3 text-sm text-[#1B211E] placeholder:text-[#8C8F86] focus:outline-none focus:border-[#1F4A3D] focus:ring-2 focus:ring-[#1F4A3D]/15 transition-colors"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-[#78716C] uppercase tracking-widest block mb-1.5">
+              <label className="text-xs font-semibold text-[#6B6F66] uppercase tracking-widest block mb-1.5">
                 Password
               </label>
               <input
@@ -200,7 +200,7 @@ export default function AuthPage() {
                 value={password}
                 onChange={e => { setPassword(e.target.value); clearError() }}
                 autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                className="w-full rounded-xl border border-[#E8DFD3] bg-white px-4 py-3 text-sm text-[#1C1510] placeholder:text-[#B8A99A] focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 transition-colors"
+                className="w-full rounded-xl border border-[#DBDAD0] bg-white px-4 py-3 text-sm text-[#1B211E] placeholder:text-[#8C8F86] focus:outline-none focus:border-[#1F4A3D] focus:ring-2 focus:ring-[#1F4A3D]/15 transition-colors"
               />
             </div>
 
@@ -211,7 +211,7 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#C96442] hover:bg-[#B85839] disabled:opacity-60 text-white font-medium py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[#C96442]/20"
+              className="w-full bg-[#1F4A3D] hover:bg-[#163329] disabled:opacity-60 text-white font-medium py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-[#1F4A3D]/20"
             >
               {loading
                 ? (mode === 'signin' ? 'Signing in…' : 'Creating account…')
@@ -220,7 +220,7 @@ export default function AuthPage() {
           </form>
 
           {/* Footer note */}
-          <p className="mt-6 text-center text-xs text-[#B8A99A]">
+          <p className="mt-6 text-center text-xs text-[#8C8F86]">
             Your conversations are private and never shared.
           </p>
 

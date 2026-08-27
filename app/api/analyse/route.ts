@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { SYSTEM_PROMPT } from '@/lib/system-prompt'
+import { authenticateRequest } from '@/lib/auth-server'
 import { ALL_HYPOTHESES, isValidThemeId } from '@/lib/growth-hypotheses'
 import type { Participant, DeterministicAnalysis } from '@/types'
 import type { UserProfile } from '@/lib/profile'
@@ -18,6 +19,15 @@ function extractJSON(text: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Gate the paid endpoint: only a signed-in user can spend. Quota is
+    // enforced upstream at step1 (the first call in the chain), so we don't
+    // re-check it here — that would wrongly block manual regeneration of an
+    // existing meeting the user has already paid for.
+    const caller = await authenticateRequest(request)
+    if (!caller) {
+      return NextResponse.json({ error: 'Please sign in to analyse a meeting.', code: 'unauthenticated' }, { status: 401 })
+    }
+
     const body = await request.json()
     const {
       transcript,
