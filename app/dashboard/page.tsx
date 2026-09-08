@@ -104,14 +104,19 @@ export default function DashboardPage() {
   const router = useRouter()
   const { user, loading, signOut } = useAuth()
   const [sessions, setSessions] = useState<Session[]>([])
+  const [profile, setProfile] = useState<ReturnType<typeof getProfile>>(null)
   const [loaded, setLoaded] = useState(false)
 
   // Re-read once auth settles: the AuthProvider hydrates localStorage from
   // Supabase asynchronously, so reading only on mount can miss that write
-  // (e.g. on a direct load or refresh of /dashboard).
+  // (e.g. on a direct load or refresh of /dashboard). Reading profile/sessions
+  // in an effect (not during render) also keeps the server and first client
+  // render identical — localStorage is empty on the server, so reading it
+  // during render would cause a hydration mismatch on the name/archetype.
   useEffect(() => {
     if (loading) return
     setSessions(getSessions())
+    setProfile(getProfile())
     setLoaded(true)
   }, [loading, user])
 
@@ -126,7 +131,6 @@ export default function DashboardPage() {
     void deleteSessionFromSupabase(id).catch(() => {})
   }
 
-  const profile = getProfile()
   const firstName = profile?.name?.trim().split(' ')[0]
   const heroArchetype = profile?.goal ? getHeroArchetype(profile.goal) : null
   const currentArchetype = profile?.communicationChallenge
