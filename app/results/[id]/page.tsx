@@ -110,13 +110,15 @@ function JourneyHeader({
   heroArchetype,
   strengths,
   challenge,
+  profileCheck,
 }: {
   currentArchetype: string | null
   heroArchetype: string | null
   strengths?: string
   challenge?: string
+  profileCheck?: string | null
 }) {
-  if (!heroArchetype && !strengths && !challenge) return null
+  if (!heroArchetype && !strengths && !challenge && !profileCheck) return null
 
   return (
     <Reveal>
@@ -126,12 +128,16 @@ function JourneyHeader({
           Becoming {heroArchetype}
         </h2>
       )}
-      {currentArchetype && (
+      {profileCheck ? (
+        // A per-meeting line (from profile_check) — keeps this section from
+        // reading the same on every report.
+        <p className="text-[17px] text-[#4A4F49] leading-relaxed mb-8">{profileCheck}</p>
+      ) : currentArchetype ? (
         <p className="text-[17px] text-[#4A4F49] leading-relaxed mb-8">
           Today you show up as <span className="text-[#1B211E] font-medium">{currentArchetype}</span>.
           The work below is how you grow from one into the other — one meeting at a time.
         </p>
-      )}
+      ) : null}
 
       {(strengths || challenge) && (
         <div className="flex flex-col sm:flex-row gap-x-12 gap-y-5 border-t border-[#DBDAD0] pt-7">
@@ -159,13 +165,20 @@ function JourneyHeader({
 
 // ─── This meeting in 30 seconds — the observations ──────────────────────────────
 
-function SnapshotSection({ snapshot }: { snapshot: CoachingOutput['snapshot'] }) {
+function SnapshotSection({ snapshot, headline }: { snapshot: CoachingOutput['snapshot']; headline?: string }) {
   const items = snapshot.slice(0, 3)
   if (items.length === 0) return null
 
   return (
     <div>
-      <Reveal><Eyebrow>This meeting, in 30 seconds</Eyebrow></Reveal>
+      <Reveal>
+        <Eyebrow>The read</Eyebrow>
+        {headline && (
+          <h2 className={`${serif} text-[26px] leading-tight font-semibold text-[#1B211E] mb-9`}>
+            {headline}
+          </h2>
+        )}
+      </Reveal>
       <ul className="space-y-7">
         {items.map((item, i) => (
           <Reveal key={i} delay={i * 120}>
@@ -548,41 +561,42 @@ export default function ResultsPage() {
             </Beat>
           )}
 
+          {/* ── The capability you're building — the credible spine, up top ── */}
+          {c.next_level?.capability && (
+            <Beat tone={TONES.base} onActive={setTone} className="py-20">
+              <div className={col}>
+                <NextLevelSection coaching={c} heroArchetype={heroArchetype} />
+              </div>
+            </Beat>
+          )}
+
           {/* ── The path ── */}
-          <Beat tone={TONES.base} onActive={setTone} className="min-h-[70vh] flex items-center py-20">
+          <Beat tone={TONES.sand} onActive={setTone} className="min-h-[70vh] flex items-center py-20">
             <div className={col + ' w-full'}>
               <JourneyHeader
                 currentArchetype={currentArchetype}
                 heroArchetype={heroArchetype}
                 strengths={profile?.strengths}
                 challenge={profile?.communicationChallenge}
+                profileCheck={c?.profile_check}
               />
             </div>
           </Beat>
 
-          {/* ── This meeting in 30 seconds ── */}
+          {/* ── The read ── */}
           {hasPairs && (
-            <Beat tone={TONES.sand} onActive={setTone} className="py-20">
+            <Beat tone={TONES.warm} onActive={setTone} className="py-20">
               <div className={col}>
-                <SnapshotSection snapshot={c.snapshot} />
+                <SnapshotSection snapshot={c.snapshot} headline={c.diagnosis?.headline} />
               </div>
             </Beat>
           )}
 
           {/* ── What to do differently ── */}
           {hasPairs && (
-            <Beat tone={TONES.warm} onActive={setTone} className="py-20">
-              <div className={col}>
-                <ActionsSection snapshot={c.snapshot} />
-              </div>
-            </Beat>
-          )}
-
-          {/* ── The capability you're building ── */}
-          {c.next_level?.capability && (
             <Beat tone={TONES.deep} onActive={setTone} className="py-20">
               <div className={col}>
-                <NextLevelSection coaching={c} heroArchetype={heroArchetype} />
+                <ActionsSection snapshot={c.snapshot} />
               </div>
             </Beat>
           )}
